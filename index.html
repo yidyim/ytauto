@@ -260,11 +260,9 @@
 
     // --- INIT & AUTH ---
     window.onload = async function() {
-      // Load cookies ke input modal jika ada
       document.getElementById('cookieGeminiKey').value = getCookie('yt_gemini_key');
       document.getElementById('cookieClientId').value = getCookie('yt_client_id');
 
-      // Tangkap hash token OAuth dari Google
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
       const accessToken = params.get('access_token');
@@ -276,15 +274,20 @@
             headers: { 'Authorization': `Bearer ${accessToken}` }
           });
           const data = await res.json();
-          if (data.items && data.items.length > 0) {
+          
+          if (data.error) {
+            alert("Error YouTube API: " + data.error.message);
+          } else if (data.items && data.items.length > 0) {
             const ch = data.items[0];
             accounts = accounts.filter(a => a.id !== ch.id);
             accounts.push({ id: ch.id, title: ch.snippet.title, token: accessToken, thumbnail: ch.snippet.thumbnails.default.url });
             localStorage.setItem('yt_multi_accounts', JSON.stringify(accounts));
             alert("Berhasil menghubungkan channel: " + ch.snippet.title);
+          } else {
+            alert("Login berhasil, namun akun Google ini tidak memiliki Channel YouTube aktif. Pastikan Anda sudah membuat channel YouTube dengan akun tersebut.");
           }
         } catch (e) {
-          console.error("Gagal ambil info channel:", e);
+          alert("Gagal mengambil data channel: " + e.message);
         }
         window.history.replaceState({}, document.title, window.location.pathname);
       }
@@ -370,7 +373,6 @@
       }
     }
 
-    // --- GEMINI AI PROCESSING (MENGGUNAKAN MODEL 3.8 / DINAMIS) ---
     async function processVideoWithAI() {
       const apiKey = getCookie('yt_gemini_key');
       const selectedModel = document.getElementById('geminiModelSelect').value || "gemini-3.8-flash";
@@ -427,7 +429,6 @@
       }
     }
 
-    // --- YOUTUBE UPLOAD ---
     async function startYouTubeUpload() {
       const channelId = document.getElementById('uploadChannelSelect').value;
       const accounts = JSON.parse(localStorage.getItem('yt_multi_accounts') || '[]');
@@ -514,7 +515,6 @@
       }
     }
 
-    // --- YT STUDIO MOBILE REALTIME DASHBOARD ---
     async function loadRealtimeDashboard() {
       const accounts = JSON.parse(localStorage.getItem('yt_multi_accounts') || '[]');
       const container = document.getElementById('videoListContainer');
@@ -544,6 +544,11 @@
           });
           const searchData = await searchRes.json();
 
+          if (searchData.error) {
+            console.error("API Error:", searchData.error.message);
+            continue;
+          }
+
           if (searchData.items && searchData.items.length > 0) {
             const videoIds = searchData.items.map(item => item.id.videoId).join(',');
             const videosRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${videoIds}`, {
@@ -570,7 +575,7 @@
       }
 
       if (allVideos.length === 0) {
-        container.innerHTML = '<div class="text-center text-gray-500 text-xs mt-20">Tidak ada video ditemukan sesuai filter.</div>';
+        container.innerHTML = '<div class="text-center text-gray-500 text-xs mt-20">Tidak ada video ditemukan atau akun belum memiliki video publik.</div>';
         return;
       }
 
