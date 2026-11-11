@@ -24,7 +24,7 @@
     </div>
   </header>
 
-  <!-- Modal Pengaturan Terpisah (Tabbed Config) -->
+  <!-- Modal Pengaturan Terpisah -->
   <div id="settingsModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
     <div class="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
       <div class="flex border-b border-gray-700 bg-gray-900/50">
@@ -43,9 +43,7 @@
             <label class="block text-xs font-semibold text-gray-300 mb-1">Pilih Model Gemini:</label>
             <div class="flex gap-2">
               <select id="geminiModelSelect" class="flex-1 bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white">
-                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                <option value="gemini-3.8-flash">Gemini 3.8 Flash (Rekomendasi)</option>
-                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                <option value="gemini-3.8-flash">Gemini 3.8 Flash (Rekomendasi Utama)</option>
               </select>
               <button onclick="fetchAvailableModels()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">Cek Model</button>
             </div>
@@ -262,7 +260,11 @@
 
     // --- INIT & AUTH ---
     window.onload = async function() {
-      // Cek hash token OAuth dari Google
+      // Load cookies ke input modal jika ada
+      document.getElementById('cookieGeminiKey').value = getCookie('yt_gemini_key');
+      document.getElementById('cookieClientId').value = getCookie('yt_client_id');
+
+      // Tangkap hash token OAuth dari Google
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
       const accessToken = params.get('access_token');
@@ -279,6 +281,7 @@
             accounts = accounts.filter(a => a.id !== ch.id);
             accounts.push({ id: ch.id, title: ch.snippet.title, token: accessToken, thumbnail: ch.snippet.thumbnails.default.url });
             localStorage.setItem('yt_multi_accounts', JSON.stringify(accounts));
+            alert("Berhasil menghubungkan channel: " + ch.snippet.title);
           }
         } catch (e) {
           console.error("Gagal ambil info channel:", e);
@@ -293,7 +296,7 @@
     function loginYouTube() {
       const clientId = getCookie('yt_client_id');
       if (!clientId) {
-        alert("Google Client ID belum diatur! Silakan klik tombol 'Pengaturan API & Kunci' terlebih dahulu.");
+        alert("Google Client ID belum diatur di Cookies! Silakan buka Pengaturan API & Kunci.");
         openSettingsModal();
         switchSettingTab('tabGoogle');
         return;
@@ -319,13 +322,11 @@
       }
 
       accounts.forEach(acc => {
-        // Dropdown Upload
         const opt1 = document.createElement('option');
         opt1.value = acc.id;
         opt1.textContent = acc.title;
         uploadSelect.appendChild(opt1);
 
-        // Dropdown Filter Dashboard
         const opt2 = document.createElement('option');
         opt2.value = acc.id;
         opt2.textContent = acc.title;
@@ -369,10 +370,10 @@
       }
     }
 
-    // --- GEMINI AI PROCESSING ---
+    // --- GEMINI AI PROCESSING (MENGGUNAKAN MODEL 3.8 / DINAMIS) ---
     async function processVideoWithAI() {
       const apiKey = getCookie('yt_gemini_key');
-      const selectedModel = document.getElementById('geminiModelSelect').value;
+      const selectedModel = document.getElementById('geminiModelSelect').value || "gemini-3.8-flash";
       const fileInput = document.getElementById('videoFileInput');
 
       if (!apiKey) {
@@ -452,7 +453,7 @@
 
       document.getElementById('progressContainer').classList.remove('hidden');
       document.getElementById('progressBar').style.width = '30%';
-      document.getElementById('progressPercent').textContent = '30% (Menyiapkan Berkaskan...)';
+      document.getElementById('progressPercent').textContent = '30% (Menyiapkan Berkas...)';
 
       const boundary = 'foo_bar_baz';
       const delimiter = `\r\n--${boundary}\r\n`;
@@ -524,7 +525,7 @@
         container.innerHTML = `
           <div class="text-center text-gray-500 text-xs mt-20">
             <i class="fa-solid fa-video-slash text-3xl mb-2 text-gray-600"></i><br>
-            Belum ada akun channel yang terhubung.<br>Silakan klik <b>"Hubungkan Channel"</b> di atas.
+            Belum ada akun channel yang terhubung.<br>Silakan klik tombol <b>"Hubungkan Channel"</b> di atas.
           </div>`;
         return;
       }
@@ -532,8 +533,6 @@
       container.innerHTML = '<div class="text-center text-gray-400 text-xs mt-20"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br>Memuat video real-time...</div>';
 
       let allVideos = [];
-
-      // Tentukan akun mana yang akan diambil
       let targetAccounts = selectedChannelFilter === 'all' 
         ? accounts 
         : accounts.filter(a => a.id === selectedChannelFilter);
@@ -554,7 +553,7 @@
 
             if (videosData.items) {
               videosData.items.forEach(v => {
-                v.channelTitle = acc.title; // Tandai nama channel
+                v.channelTitle = acc.title;
                 allVideos.push(v);
               });
             }
@@ -564,7 +563,6 @@
         }
       }
 
-      // Filter Shorts vs Long-form
       if (selectedTypeFilter === 'shorts') {
         allVideos = allVideos.filter(v => parseDurationInSeconds(v.contentDetails.duration) <= 60);
       } else if (selectedTypeFilter === 'long') {
