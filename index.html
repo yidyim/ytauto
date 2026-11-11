@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube Automator Pro - Studio Mobile Edition</title>
+  <title>YouTube Automator Pro - Quota Saver Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -12,7 +12,7 @@
   <!-- Header Navbar -->
   <header class="bg-gray-800 border-b border-gray-700 py-3 px-6 flex justify-between items-center shadow-md">
     <h1 class="text-lg font-bold text-red-500 flex items-center gap-2">
-      <i class="fa-brands fa-youtube text-2xl"></i> YT Studio Mobile Pro
+      <i class="fa-brands fa-youtube text-2xl"></i> YT Studio Mobile (Quota Saver)
     </h1>
     <div class="flex items-center gap-2">
       <button onclick="openSettingsModal()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
@@ -156,24 +156,24 @@
       </div>
     </div>
 
-    <!-- Kanan: YouTube Studio Mobile Dashboard Real-time -->
+    <!-- Kanan: YouTube Studio Mobile Dashboard Real-time (Quota Saver) -->
     <div class="lg:col-span-6 bg-gray-800 rounded-2xl p-5 border border-gray-700 flex flex-col h-[750px] shadow-lg">
       <h2 class="text-sm font-bold uppercase tracking-wider text-purple-400 border-b border-gray-700 pb-2 mb-3 flex items-center justify-between">
         <span class="flex items-center gap-2"><i class="fa-solid fa-mobile-screen-button"></i> YT Studio Mobile Dashboard</span>
-        <button onclick="loadRealtimeDashboard()" class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-2.5 py-1 rounded-lg"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        <button onclick="forceRefreshDashboard()" class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-2.5 py-1 rounded-lg" title="Ambil data baru dari YouTube (Memakai Kuota)"><i class="fa-solid fa-rotate"></i> Refresh API</button>
       </h2>
 
-      <!-- Filter Bar ala YT Studio Mobile -->
+      <!-- Filter Bar (100% Gratis Kuota / Client-side Filtering) -->
       <div class="grid grid-cols-2 gap-2 mb-3">
         <div>
           <label class="block text-[10px] text-gray-400 mb-0.5">Filter Channel:</label>
-          <select id="dashboardChannelFilter" onchange="loadRealtimeDashboard()" class="w-full bg-gray-700 text-xs rounded-lg p-2 border border-gray-600 text-white">
+          <select id="dashboardChannelFilter" onchange="renderDashboardFromCache()" class="w-full bg-gray-700 text-xs rounded-lg p-2 border border-gray-600 text-white">
             <option value="all">Semua Channel (Gabungan)</option>
           </select>
         </div>
         <div>
           <label class="block text-[10px] text-gray-400 mb-0.5">Filter Jenis Video:</label>
-          <select id="dashboardTypeFilter" onchange="loadRealtimeDashboard()" class="w-full bg-gray-700 text-xs rounded-lg p-2 border border-gray-600 text-white">
+          <select id="dashboardTypeFilter" onchange="renderDashboardFromCache()" class="w-full bg-gray-700 text-xs rounded-lg p-2 border border-gray-600 text-white">
             <option value="all">Semua Video</option>
             <option value="shorts">Shorts (< 60s)</option>
             <option value="long">Long-form</option>
@@ -185,7 +185,7 @@
       <div id="videoListContainer" class="flex-1 overflow-y-auto space-y-2.5 pr-1">
         <div class="text-center text-gray-500 text-xs mt-20">
           <i class="fa-solid fa-video-slash text-3xl mb-2 text-gray-600"></i><br>
-          Belum ada akun channel yang terhubung atau belum dimuat.<br>Klik tombol <b>"Hubungkan Channel"</b> di atas.
+          Belum ada data video dimuat.<br>Klik tombol <b>"Hubungkan Channel"</b> atau <b>"Refresh API"</b> di atas.
         </div>
       </div>
     </div>
@@ -193,6 +193,9 @@
   </div>
 
   <script>
+    // Global cache untuk menghemat kuota YouTube API secara ekstrem
+    let cachedMasterVideos = [];
+
     // --- COOKIE HELPER FUNCTIONS ---
     function setCookie(name, value, days = 30) {
       const d = new Date();
@@ -284,7 +287,7 @@
             localStorage.setItem('yt_multi_accounts', JSON.stringify(accounts));
             alert("Berhasil menghubungkan channel: " + ch.snippet.title);
           } else {
-            alert("Login berhasil, namun akun Google ini tidak memiliki Channel YouTube aktif. Pastikan Anda sudah membuat channel YouTube dengan akun tersebut.");
+            alert("Login berhasil, namun akun ini tidak memiliki Channel YouTube aktif.");
           }
         } catch (e) {
           alert("Gagal mengambil data channel: " + e.message);
@@ -293,7 +296,15 @@
       }
 
       populateChannelSelectors();
-      loadRealtimeDashboard();
+      
+      // Load dari LocalStorage jika ada (Agar tidak boros kuota saat buka web)
+      const savedCache = localStorage.getItem('yt_video_cache');
+      if (savedCache) {
+        cachedMasterVideos = JSON.parse(savedCache);
+        renderDashboardFromCache();
+      } else {
+        loadRealtimeDashboardFromAPI(); // Ambil dari API jika belum ada cache sama sekali
+      }
     };
 
     function loginYouTube() {
@@ -491,7 +502,7 @@
           document.getElementById('progressBar').style.width = '100%';
           document.getElementById('progressPercent').textContent = '100% (Selesai!)';
           alert("Video & Thumbnail Berhasil Diunggah!");
-          loadRealtimeDashboard();
+          forceRefreshDashboard(); // Refresh manual setelah upload baru
         } else {
           alert("Upload Gagal: " + (result.error ? result.error.message : 'Unknown error'));
         }
@@ -515,11 +526,17 @@
       }
     }
 
-    async function loadRealtimeDashboard() {
+    // --- FUNGSI UTAMA QUOTA SAVER ---
+    
+    // 1. Memaksa ambil dari API (Hanya berjalan jika tombol "Refresh API" diklik)
+    async function forceRefreshDashboard() {
+      await loadRealtimeDashboardFromAPI();
+    }
+
+    // 2. Mengambil data dari API YouTube (Menghabiskan Kuota, gunakan seperlunya)
+    async function loadRealtimeDashboardFromAPI() {
       const accounts = JSON.parse(localStorage.getItem('yt_multi_accounts') || '[]');
       const container = document.getElementById('videoListContainer');
-      const selectedChannelFilter = document.getElementById('dashboardChannelFilter').value;
-      const selectedTypeFilter = document.getElementById('dashboardTypeFilter').value;
 
       if (accounts.length === 0) {
         container.innerHTML = `
@@ -530,14 +547,10 @@
         return;
       }
 
-      container.innerHTML = '<div class="text-center text-gray-400 text-xs mt-20"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br>Memuat video real-time...</div>';
+      container.innerHTML = '<div class="text-center text-gray-400 text-xs mt-20"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br>Memuat data terbaru dari YouTube API...</div>';
 
       let allVideos = [];
-      let targetAccounts = selectedChannelFilter === 'all' 
-        ? accounts 
-        : accounts.filter(a => a.id === selectedChannelFilter);
-
-      for (let acc of targetAccounts) {
+      for (let acc of accounts) {
         try {
           const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${acc.id}&maxResults=15&order=date&type=video`, {
             headers: { 'Authorization': `Bearer ${acc.token}` }
@@ -558,7 +571,8 @@
 
             if (videosData.items) {
               videosData.items.forEach(v => {
-                v.channelTitle = acc.title;
+                v.channelIdRef = acc.id;
+                v.channelTitleRef = acc.title;
                 allVideos.push(v);
               });
             }
@@ -568,19 +582,49 @@
         }
       }
 
-      if (selectedTypeFilter === 'shorts') {
-        allVideos = allVideos.filter(v => parseDurationInSeconds(v.contentDetails.duration) <= 60);
-      } else if (selectedTypeFilter === 'long') {
-        allVideos = allVideos.filter(v => parseDurationInSeconds(v.contentDetails.duration) > 60);
+      // Simpan ke Cache Master & LocalStorage agar tidak boros kuota ke depan
+      cachedMasterVideos = allVideos;
+      localStorage.setItem('yt_video_cache', JSON.stringify(allVideos));
+
+      renderDashboardFromCache();
+    }
+
+    // 3. Merender dashboard secara instan dari Memory/Cache (0% Kuota Terpakai!)
+    function renderDashboardFromCache() {
+      const container = document.getElementById('videoListContainer');
+      const selectedChannelFilter = document.getElementById('dashboardChannelFilter').value;
+      const selectedTypeFilter = document.getElementById('dashboardTypeFilter').value;
+
+      if (!cachedMasterVideos || cachedMasterVideos.length === 0) {
+        container.innerHTML = `
+          <div class="text-center text-gray-500 text-xs mt-20">
+            <i class="fa-solid fa-video-slash text-3xl mb-2 text-gray-600"></i><br>
+            Belum ada data video di memori cache.<br>Klik tombol <b>"Refresh API"</b> di atas untuk mengambil data.
+          </div>`;
+        return;
       }
 
-      if (allVideos.length === 0) {
-        container.innerHTML = '<div class="text-center text-gray-500 text-xs mt-20">Tidak ada video ditemukan atau akun belum memiliki video publik.</div>';
+      let filtered = cachedMasterVideos;
+
+      // Filter berdasarkan channel
+      if (selectedChannelFilter !== 'all') {
+        filtered = filtered.filter(v => v.channelIdRef === selectedChannelFilter);
+      }
+
+      // Filter berdasarkan jenis video (Shorts vs Long)
+      if (selectedTypeFilter === 'shorts') {
+        filtered = filtered.filter(v => parseDurationInSeconds(v.contentDetails.duration) <= 60);
+      } else if (selectedTypeFilter === 'long') {
+        filtered = filtered.filter(v => parseDurationInSeconds(v.contentDetails.duration) > 60);
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="text-center text-gray-500 text-xs mt-20">Tidak ada video ditemukan sesuai filter.</div>';
         return;
       }
 
       container.innerHTML = '';
-      allVideos.forEach(v => {
+      filtered.forEach(v => {
         const item = document.createElement('div');
         item.className = "bg-gray-700/40 hover:bg-gray-700/70 transition p-3 rounded-xl border border-gray-700 flex gap-3 items-center";
 
@@ -589,7 +633,7 @@
         const views = Number(v.statistics?.viewCount || 0).toLocaleString();
         const likes = Number(v.statistics?.likeCount || 0).toLocaleString();
         const comments = Number(v.statistics?.commentCount || 0).toLocaleString();
-        const channelName = v.channelTitle;
+        const channelName = v.channelTitleRef;
 
         item.innerHTML = `
           <div class="relative w-24 h-14 bg-gray-900 rounded-lg overflow-hidden flex-shrink-0">
