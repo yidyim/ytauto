@@ -201,68 +201,75 @@
     }
 
     async function processVideoWithAI() {
-      const apiKey = document.getElementById('geminiKeyInput').value.trim();
-      const fileInput = document.getElementById('videoFileInput');
+  const apiKey = document.getElementById('geminiKeyInput').value.trim();
+  const fileInput = document.getElementById('videoFileInput');
 
-      if (!apiKey) return alert("Masukkan Gemini API Key terlebih dahulu!");
-      if (!fileInput.files[0]) return alert("Pilih berkas video terlebih dahulu!");
+  if (!apiKey) return alert("Masukkan Gemini API Key terlebih dahulu!");
+  if (!fileInput.files[0]) return alert("Pilih berkas video terlebih dahulu!");
 
-      const fileName = fileInput.files[0].name;
-      const btn = document.getElementById('btnProcess');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gemini sedang menganalisis...';
+  const fileName = fileInput.files[0].name;
+  const btn = document.getElementById('btnProcess');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gemini sedang menganalisis...';
 
-      const prompt = `Analisis topik video berdasarkan nama file: "${fileName}". 
-      Buatkan metadata YouTube SEO Evergreen terlengkap dalam format JSON murni tanpa markdown, dengan properti:
-      {
-        "newFileName": "nama_file_baru_seo.mp4",
-        "title": "Judul Video SEO FYP dengan Emotikon Menarik",
-        "description": "Deskripsi rapi, menarik, berisi timestamps 00:00, paragraf berkualitas, dan hashtag tag evergreen di akhir.",
-        "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-        "categoryId": "22",
-        "thumbnailConcepts": [
-          "Ide Thumbnail 1: Teks utama dan visual",
-          "Ide Thumbnail 2: Teks utama dan visual"
-        ]
-      }`;
+  const prompt = `Analisis topik video berdasarkan nama file: "${fileName}". 
+  Buatkan metadata YouTube SEO Evergreen terlengkap dalam format JSON murni tanpa markdown, dengan properti:
+  {
+    "newFileName": "nama_file_baru_seo.mp4",
+    "title": "Judul Video SEO FYP dengan Emotikon Menarik",
+    "description": "Deskripsi rapi, menarik, berisi timestamps 00:00, paragraf berkualitas, dan hashtag tag evergreen di akhir.",
+    "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+    "categoryId": "22",
+    "thumbnailConcepts": [
+      "Ide Thumbnail 1: Teks utama dan visual",
+      "Ide Thumbnail 2: Teks utama dan visual"
+    ]
+  }`;
 
-      try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
+  try {
+    // Menggunakan endpoint v1beta model gemini-2.5-flash
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
 
-        const result = await response.json();
-        const textResponse = result.candidates[0].content.parts[0].text;
-        let cleanJson = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-        const data = JSON.parse(cleanJson);
+    const result = await response.json();
 
-        document.getElementById('aiFileName').value = data.newFileName || fileName;
-        document.getElementById('aiTitle').value = data.title;
-        document.getElementById('aiDescription').value = data.description;
-        document.getElementById('aiTags').value = data.tags ? data.tags.join(', ') : '';
-        document.getElementById('aiCategory').value = data.categoryId || '22';
-
-        const thumbList = document.getElementById('aiThumbnails');
-        thumbList.innerHTML = '';
-        if (data.thumbnailConcepts) {
-          data.thumbnailConcepts.forEach(c => {
-            const li = document.createElement('li');
-            li.textContent = c;
-            thumbList.appendChild(li);
-          });
-        }
-
-        document.getElementById('aiResultArea').classList.remove('hidden');
-      } catch (err) {
-        alert("Gagal memproses dengan Gemini AI. Periksa kembali API Key Anda.");
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Proses AI & Buat SEO Metadata';
-      }
+    if (!response.ok) {
+      throw new Error(result.error ? result.error.message : "Gagal terhubung ke API Gemini");
     }
 
+    const textResponse = result.candidates[0].content.parts[0].text;
+    let cleanJson = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+    const data = JSON.parse(cleanJson);
+
+    document.getElementById('aiFileName').value = data.newFileName || fileName;
+    document.getElementById('aiTitle').value = data.title;
+    document.getElementById('aiDescription').value = data.description;
+    document.getElementById('aiTags').value = data.tags ? data.tags.join(', ') : '';
+    document.getElementById('aiCategory').value = data.categoryId || '22';
+
+    const thumbList = document.getElementById('aiThumbnails');
+    thumbList.innerHTML = '';
+    if (data.thumbnailConcepts) {
+      data.thumbnailConcepts.forEach(c => {
+        const li = document.createElement('li');
+        li.textContent = c;
+        thumbList.appendChild(li);
+      });
+    }
+
+    document.getElementById('aiResultArea').classList.remove('hidden');
+  } catch (err) {
+    alert("Error Gemini AI: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Proses AI & Buat SEO Metadata';
+  }
+}
     async function startYouTubeUpload() {
       const token = localStorage.getItem('yt_access_token');
       if (!token) return alert("Silakan hubungkan akun YouTube terlebih dahulu!");
