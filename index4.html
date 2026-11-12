@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube Automator Pro - Stable Model Edition</title>
+  <title>YouTube Automator Pro - HD Preview & Fixed AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -81,7 +81,6 @@
         <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
           <i class="fa-solid fa-cloud-arrow-up"></i> Upload & AI Otomasi Video Pro
         </h2>
-        <!-- Status Model Aktif (Badge) -->
         <span id="activeModelBadge" class="bg-blue-900/60 text-blue-300 text-[10px] px-2.5 py-1 rounded-full font-mono font-medium border border-blue-700/50">
           <i class="fa-solid fa-robot"></i> Model: Memuat...
         </span>
@@ -105,33 +104,37 @@
         </div>
       </div>
 
-      <!-- Preview Thumbnail Aktif & Pilihan Source -->
-      <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-700 space-y-2">
+      <!-- Preview Thumbnail Terpilih (Diperbesar / Aktual Ukuran YouTube 16:9) -->
+      <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-700 space-y-3">
         <div class="flex items-center justify-between">
-          <label class="text-[11px] font-semibold text-purple-400"><i class="fa-solid fa-image"></i> Preview Thumbnail Terpilih:</label>
-          <span id="thumbSourceLabel" class="text-[10px] text-gray-400">Belum ada thumbnail</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <div class="w-28 h-16 bg-black border border-gray-600 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0 relative">
-            <img id="activeThumbnailPreview" src="" class="w-full h-full object-cover hidden">
-            <span id="noThumbPlaceholder" class="text-[10px] text-gray-500">No Image</span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-[10px] text-gray-300">Thumbnail siap diunggah ke YouTube.</p>
-          </div>
-        </div>
-
-        <div id="snapshotSection" class="hidden pt-2 border-t border-gray-800 space-y-1.5">
-          <label class="block text-[10px] font-semibold text-gray-400">Pilih dari jepretan frame video:</label>
-          <div id="snapshotGrid" class="grid grid-cols-4 gap-1.5"></div>
-        </div>
-
-        <div id="aiThumbnailChoicesArea" class="hidden pt-2 border-t border-purple-900 space-y-1.5 bg-purple-950/20 p-2 rounded-lg border border-purple-800/60">
-          <label class="block text-[11px] font-semibold text-purple-300 flex items-center justify-between">
-            <span><i class="fa-solid fa-wand-magic-sparkles"></i> Pilihan Thumbnail Buatan AI:</span>
-            <span id="aiGenStatus" class="text-[10px] text-gray-400 hidden"><i class="fa-solid fa-spinner fa-spin"></i> Generate...</span>
+          <label class="text-xs font-bold text-purple-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-image"></i> Preview Thumbnail Terpilih (Ukuran Aktual YouTube):
           </label>
-          <div id="aiThumbnailGrid" class="grid grid-cols-4 gap-1.5"></div>
+          <span id="thumbSourceLabel" class="text-[11px] text-gray-400 font-medium">Belum ada thumbnail</span>
+        </div>
+
+        <!-- Wadah Preview Diperbesar Ukuran 16:9 Lanskap -->
+        <div class="w-full aspect-video bg-black border-2 border-purple-500/40 rounded-xl overflow-hidden flex items-center justify-center relative shadow-xl">
+          <img id="activeThumbnailPreview" src="" class="w-full h-full object-cover hidden">
+          <div id="noThumbPlaceholder" class="text-center text-gray-500 text-xs">
+            <i class="fa-regular fa-image text-3xl mb-1 text-gray-600"></i><br>
+            Belum ada thumbnail dipilih.<br>Pilih dari frame video, galeri, atau hasil AI di bawah.
+          </div>
+        </div>
+
+        <!-- Pilihan Jepretan Frame Video -->
+        <div id="snapshotSection" class="hidden pt-2 border-t border-gray-800 space-y-1.5">
+          <label class="block text-[11px] font-semibold text-gray-300">Pilih dari jepretan frame video:</label>
+          <div id="snapshotGrid" class="grid grid-cols-4 gap-2"></div>
+        </div>
+
+        <!-- Pilihan Thumbnail Buatan AI -->
+        <div id="aiThumbnailChoicesArea" class="hidden pt-2 border-t border-purple-900 space-y-2 bg-purple-950/20 p-2.5 rounded-lg border border-purple-800/60">
+          <label class="block text-xs font-semibold text-purple-300 flex items-center justify-between">
+            <span><i class="fa-solid fa-wand-magic-sparkles"></i> Pilihan Thumbnail Buatan AI (Klik untuk pakai):</span>
+            <span id="aiGenStatus" class="text-[11px] text-gray-400 hidden"><i class="fa-solid fa-spinner fa-spin"></i> Sedang membuat gambar...</span>
+          </label>
+          <div id="aiThumbnailGrid" class="grid grid-cols-4 gap-2"></div>
         </div>
       </div>
 
@@ -311,7 +314,6 @@
       return "";
     }
 
-    // Fungsi untuk memperbarui badge status model di Card Upload
     function updateActiveModelBadge() {
       const savedModel = getCookie('yt_gemini_model') || document.getElementById('geminiModelSelect').value || 'gemini-1.5-flash';
       const badge = document.getElementById('activeModelBadge');
@@ -350,7 +352,7 @@
       setCookie('yt_gemini_key', geminiKey);
       setCookie('yt_stability_key', stabilityKey);
       setCookie('yt_client_id', clientId);
-      setCookie('yt_gemini_model', selectedModel); // SIMPAN PERMANEN KE COOKIE
+      setCookie('yt_gemini_model', selectedModel);
 
       updateActiveModelBadge();
       alert("Pengaturan dan pilihan model berhasil disimpan!");
@@ -385,11 +387,10 @@
       if (savedModel) {
         document.getElementById('geminiModelSelect').value = savedModel;
       } else {
-        // Default awal jika belum terset
         setCookie('yt_gemini_model', 'gemini-1.5-flash');
       }
 
-      updateActiveModelBadge(); // Tampilkan status model aktif saat halaman dimuat
+      updateActiveModelBadge();
 
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
@@ -551,16 +552,16 @@
           await new Promise(r => { video.onseeked = r; });
 
           const canvas = document.createElement('canvas');
-          canvas.width = 640;
-          canvas.height = 360;
+          canvas.width = 1280;
+          canvas.height = 720;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
           base64Snapshots.push(dataUrl.split(',')[1]);
 
           const div = document.createElement('div');
-          div.className = "relative group cursor-pointer border-2 border-transparent hover:border-blue-500 rounded overflow-hidden bg-black aspect-video";
+          div.className = "relative group cursor-pointer border-2 border-transparent hover:border-purple-500 rounded overflow-hidden bg-black aspect-video";
           div.innerHTML = `
             <img src="${dataUrl}" class="w-full h-full object-cover">
             <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[9px] text-white font-semibold">Pakai</div>
@@ -591,11 +592,10 @@
       }
     }
 
-    // FUNGSI ANALISIS VIDEO MENGGUNAKAN MODEL YANG DISIMPAN
     async function processVideoWithAI() {
       const apiKey = getCookie('yt_gemini_key');
       const stabilityKey = getCookie('yt_stability_key');
-      const selectedModel = getCookie('yt_gemini_model') || 'gemini-1.5-flash'; // AMBIL MODEL DARI COOKIE PERMANEN
+      const selectedModel = getCookie('yt_gemini_model') || 'gemini-1.5-flash';
       const fileInput = document.getElementById('videoFileInput');
 
       if (!apiKey) {
@@ -635,7 +635,7 @@ Format JSON:
   "description": "Deskripsi terstruktur, timestamps 00:00 Pendahuluan, dst, dan 3-20 hashtag di akhir, 3 hashtag awal sangat relevan dan SEO abadi",
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
   "marketplaceKeywords": "Kata kunci produk Shopee/Tokopedia yang relevan",
-  "thumbnailPrompt": "Descriptive English prompt for AI image generator (Stable Diffusion/DALL-E 3) to create a colorful, high-contrast, attention-grabbing YouTube thumbnail (16:9 landscape) based on the video content above."
+  "thumbnailPrompt": "Descriptive English prompt for AI image generator (Stable Diffusion) to create a colorful, high-contrast, attention-grabbing YouTube thumbnail (16:9 landscape) based on the video content above."
 }` });
 
       try {
@@ -675,6 +675,7 @@ Format JSON:
       }
     }
 
+    // --- DIPERBAIKI: MENGGUNAKAN DIMENSI YANG DIDUKUNG STABILITY AI (1344x768) ---
     async function generateAIImagesAutomatically(promptText, apiKey) {
       const aiGrid = document.getElementById('aiThumbnailGrid');
       const aiGenStatus = document.getElementById('aiGenStatus');
@@ -685,8 +686,8 @@ Format JSON:
       const payload = {
         text_prompts: [{ text: promptText, weight: 1 }],
         cfg_scale: 7,
-        height: 576,
-        width: 1024,
+        height: 768,  // Diperbaiki ke ukuran standar SDXL 16:9 yang didukung (1344x768)
+        width: 1344,  // Diperbaiki ke ukuran standar SDXL 16:9 yang didukung (1344x768)
         samples: 4,
         steps: 30,
         style_preset: "cinematic"
@@ -969,7 +970,7 @@ Format JSON:
             </div>
           </div>
         `;
-        container.appendChild(item);
+        container.item.appendChild(item);
       });
     }
 
