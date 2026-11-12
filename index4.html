@@ -216,10 +216,10 @@
       </div>
     </div>
 
-    <!-- Kanan: YouTube Studio Mobile Dashboard (Gaya Referensi) -->
+    <!-- Kanan: YouTube Studio Mobile Dashboard -->
     <div class="lg:col-span-7 bg-gray-800 rounded-2xl p-4 sm:p-5 border border-gray-700 flex flex-col shadow-lg space-y-4">
       
-      <!-- Header Dashboard ala Gambar Referensi -->
+      <!-- Header Dashboard -->
       <div class="bg-gray-900/80 border border-gray-700/80 p-3.5 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h2 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
@@ -232,7 +232,7 @@
         </button>
       </div>
 
-      <!-- Card Count Video Sekecil & Seringkas Mungkin -->
+      <!-- Card Count Video -->
       <div class="grid grid-cols-4 gap-2 text-center">
         <div class="bg-gray-900/60 border border-gray-700/60 p-2 rounded-lg">
           <p class="text-[9px] uppercase tracking-wider text-gray-400 font-semibold">Total Video</p>
@@ -252,7 +252,7 @@
         </div>
       </div>
 
-      <!-- Filter Bar Dashboard Lengkap -->
+      <!-- Filter Bar Dashboard -->
       <div class="space-y-2 bg-gray-900/40 p-3 rounded-xl border border-gray-700/60">
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
           <div>
@@ -305,7 +305,7 @@
         </div>
       </div>
 
-      <!-- Real-time Video Grid Container (2 cols for HP, 3 cols for Tab, 4 cols for PC) -->
+      <!-- Real-time Video Grid Container -->
       <div id="videoListContainer" class="flex-1 overflow-y-auto max-h-[550px] pr-1 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
         <div class="col-span-full text-center text-gray-500 text-xs mt-16">
           <i class="fa-solid fa-video-slash text-3xl mb-2 text-gray-600"></i><br>
@@ -394,7 +394,7 @@
         contentGemini.classList.remove('hidden');
         contentGoogle.classList.add('hidden');
       } else {
-        btnGoogle.className = "flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 transition";
+        btnGoogle.className = "flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-transparent transition";
         btnGemini.className = "flex-1 py-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition";
         contentGoogle.classList.remove('hidden');
         contentGemini.classList.add('hidden');
@@ -810,6 +810,7 @@
       await loadRealtimeDashboardFromAPI();
     }
 
+    // DINAIKKAN KE 50 VIDEO AGAR LEBIH BANYAK YANG TERIMPORT
     async function loadRealtimeDashboardFromAPI() {
       const accounts = JSON.parse(localStorage.getItem('yt_multi_accounts') || '[]');
       const container = document.getElementById('videoListContainer');
@@ -824,7 +825,7 @@
       let allVideos = [];
       for (let acc of accounts) {
         try {
-          const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${acc.id}&maxResults=20&order=date&type=video`, {
+          const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${acc.id}&maxResults=50&order=date&type=video`, {
             headers: { 'Authorization': `Bearer ${acc.token}` }
           });
           const searchData = await searchRes.json();
@@ -892,7 +893,6 @@
       if (sortFilter === 'views-low-high') filtered.sort((a, b) => Number(a.statistics?.viewCount || 0) - Number(b.statistics?.viewCount || 0));
       else if (sortFilter === 'views-high-low') filtered.sort((a, b) => Number(b.statistics?.viewCount || 0) - Number(a.statistics?.viewCount || 0));
 
-      // Hitung statistik untuk header card
       const totalCount = cachedMasterVideos.length;
       const shortsCount = cachedMasterVideos.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") <= 60).length;
       const longCount = totalCount - shortsCount;
@@ -919,8 +919,9 @@
         const comments = Number(v.statistics?.commentCount || 0).toLocaleString();
         const publishedDate = timeAgo(v.snippet.publishedAt);
 
+        // DIPERBAIKI: Menggunakan tinggi tetap h-36 agar thumbnail tampil penuh proporsional
         item.innerHTML = `
-          <div class="relative w-full aspect-video bg-black overflow-hidden">
+          <div class="relative w-full h-36 bg-black overflow-hidden flex-shrink-0">
             <img src="${thumb}" class="w-full h-full object-cover">
             <span class="absolute top-1.5 left-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded ${isShort ? 'bg-red-600 text-white' : 'bg-black/70 text-gray-200'}">
               ${isShort ? '<i class="fa-solid fa-bolt"></i> SHORTS' : 'VIDEO'}
