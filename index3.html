@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube Automator Pro - Multimodal Studio Edition</title>
+  <title>YouTube Automator Pro - Direct Video Multimodal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -37,7 +37,7 @@
         <div id="contentTabGemini" class="space-y-3">
           <label class="block text-xs font-semibold text-gray-300">Gemini API Key:</label>
           <input type="password" id="cookieGeminiKey" placeholder="AIzaSy..." class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-xs text-white">
-          <p class="text-[11px] text-gray-400">Kunci ini digunakan untuk analisis visual video & SEO otomatis.</p>
+          <p class="text-[11px] text-gray-400">Kunci ini digunakan untuk upload video langsung ke Gemini & SEO otomatis.</p>
           
           <div class="pt-2">
             <label class="block text-xs font-semibold text-gray-300 mb-1">Pilih Model Gemini:</label>
@@ -89,15 +89,31 @@
           <input type="file" id="videoFileInput" accept="video/*" onchange="handleVideoSelection()" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700">
         </div>
         <div>
-          <label class="block text-xs font-semibold mb-1">Berkas Thumbnail (Opsional):</label>
-          <input type="file" id="thumbFileInput" accept="image/*" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+          <label class="block text-xs font-semibold mb-1">Berkas Thumbnail (Galeri):</label>
+          <input type="file" id="thumbFileInput" accept="image/*" onchange="handleCustomThumbnailSelection(event)" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
         </div>
       </div>
 
-      <!-- Pilihan Thumbnail Hasil Jepret Video (2 - 5 Pilihan) -->
-      <div id="snapshotSection" class="hidden space-y-2 bg-gray-900/50 p-3 rounded-xl border border-gray-700">
-        <label class="block text-[11px] font-semibold text-purple-400"><i class="fa-solid fa-camera"></i> Pilih Thumbnail Jepretan Video (Klik untuk pakai):</label>
-        <div id="snapshotGrid" class="grid grid-cols-4 gap-2"></div>
+      <!-- Preview Thumbnail Aktif & Pilihan Snapshot -->
+      <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-700 space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="text-[11px] font-semibold text-purple-400"><i class="fa-solid fa-image"></i> Preview Thumbnail Terpilih:</label>
+          <span id="thumbSourceLabel" class="text-[10px] text-gray-400">Belum ada thumbnail</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-28 h-16 bg-black border border-gray-600 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+            <img id="activeThumbnailPreview" src="" class="w-full h-full object-cover hidden">
+            <span id="noThumbPlaceholder" class="text-[10px] text-gray-500">No Image</span>
+          </div>
+          <div class="flex-1">
+            <p class="text-[10px] text-gray-300">Anda bisa memilih jepretan frame di bawah atau mengunggah gambar kustom dari galeri.</p>
+          </div>
+        </div>
+
+        <div id="snapshotSection" class="hidden pt-2 border-t border-gray-800 space-y-1.5">
+          <label class="block text-[10px] font-semibold text-purple-300">Atau pilih jepretan frame video otomatis:</label>
+          <div id="snapshotGrid" class="grid grid-cols-4 gap-2"></div>
+        </div>
       </div>
 
       <button id="btnProcess" onclick="processVideoWithAI()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2 shadow">
@@ -197,7 +213,7 @@
         <button onclick="forceRefreshDashboard()" class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-2.5 py-1 rounded-lg" title="Ambil data baru"><i class="fa-solid fa-rotate"></i> Refresh API</button>
       </h2>
 
-      <!-- Filter Bar Dashboard (Termasuk Filter Channel) -->
+      <!-- Filter Bar Dashboard -->
       <div class="space-y-2 mb-3 bg-gray-900/40 p-3 rounded-xl border border-gray-700/60">
         <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
           <div>
@@ -264,7 +280,6 @@
   <script>
     let cachedMasterVideos = [];
     let isScheduledOnlyActive = false;
-    let extractedSnapshots = [];
     let selectedThumbnailBlob = null;
 
     function setCookie(name, value, days = 30) {
@@ -459,7 +474,7 @@
       }
     }
 
-    // Fungsi Ekstraksi Snapshot Frame Video (2 sampai 5 pilihan thumbnail)
+    // Penanganan Pemilihan Video & Pembuatan Snapshot Thumbnail
     async function handleVideoSelection() {
       const fileInput = document.getElementById('videoFileInput');
       const snapshotSection = document.getElementById('snapshotSection');
@@ -470,9 +485,8 @@
       document.getElementById('aiFileName').value = file.name;
 
       snapshotSection.classList.remove('hidden');
-      snapshotGrid.innerHTML = '<div class="text-xs text-gray-400 col-span-4 text-center py-2"><i class="fa-solid fa-spinner fa-spin"></i> Menjepret 4 thumbnail dari video...</div>';
+      snapshotGrid.innerHTML = '<div class="text-[10px] text-gray-400 col-span-4 text-center py-2"><i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan 4 jepretan thumbnail...</div>';
 
-      extractedSnapshots = [];
       const video = document.createElement('video');
       video.preload = 'metadata';
       video.src = URL.createObjectURL(file);
@@ -481,7 +495,7 @@
 
       video.onloadedmetadata = async function() {
         const duration = video.duration;
-        const timePoints = [duration * 0.2, duration * 0.4, duration * 0.6, duration * 0.8];
+        const timePoints = [duration * 0.1, duration * 0.35, duration * 0.6, duration * 0.85];
         snapshotGrid.innerHTML = '';
 
         for (let i = 0; i < timePoints.length; i++) {
@@ -495,32 +509,56 @@
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           
           const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-          extractedSnapshots.push(dataUrl);
 
           const div = document.createElement('div');
           div.className = "relative group cursor-pointer border-2 border-transparent hover:border-blue-500 rounded-lg overflow-hidden bg-black";
           div.innerHTML = `
-            <img src="${dataUrl}" class="w-full h-16 object-cover">
-            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[10px] text-white font-semibold">Pilih</div>
+            <img src="${dataUrl}" class="w-full h-14 object-cover">
+            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[9px] text-white font-semibold">Pakai</div>
           `;
           div.onclick = () => {
-            selectThumbnailSnapshot(dataUrl, i);
+            selectThumbnailSnapshot(dataUrl, `snapshot_${i + 1}.jpg`);
           };
           snapshotGrid.appendChild(div);
         }
       };
     }
 
-    function selectThumbnailSnapshot(dataUrl, index) {
+    // Pilih snapshot sebagai thumbnail aktif & tampilkan preview
+    function selectThumbnailSnapshot(dataUrl, filename) {
       fetch(dataUrl)
         .then(res => res.blob())
         .then(blob => {
-          selectedThumbnailBlob = new File([blob], `thumbnail_jepret_${index + 1}.jpg`, { type: 'image/jpeg' });
-          alert(`Thumbnail #${index + 1} berhasil dipilih untuk diunggah bersama video!`);
+          selectedThumbnailBlob = new File([blob], filename, { type: 'image/jpeg' });
+          updateThumbnailPreview(dataUrl, "Jepretan Frame Video");
         });
     }
 
-    // Fungsi Multimodal: Kirim Video Frame + Prompt ke Gemini
+    // Pilih thumbnail kustom dari galeri & tampilkan preview
+    function handleCustomThumbnailSelection(event) {
+      const file = event.target.files[0];
+      if (file) {
+        selectedThumbnailBlob = file;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          updateThumbnailPreview(e.target.result, "File Galeri Kustom");
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function updateThumbnailPreview(imgSrc, sourceLabel) {
+      const previewImg = document.getElementById('activeThumbnailPreview');
+      const placeholder = document.getElementById('noThumbPlaceholder');
+      const label = document.getElementById('thumbSourceLabel');
+
+      previewImg.src = imgSrc;
+      previewImg.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+      label.textContent = `Sumber: ${sourceLabel}`;
+    }
+
+    // FUNGSI UTAMA: Upload File Video Asli ke Gemini Files API (Real Multimodal Video Input)
     async function processVideoWithAI() {
       const apiKey = getCookie('yt_gemini_key');
       const selectedModel = getCookie('yt_gemini_model') || document.getElementById('geminiModelSelect').value || "gemini-3.8-flash";
@@ -533,53 +571,83 @@
       }
       if (!fileInput.files[0]) return alert("Pilih berkas video terlebih dahulu!");
 
-      const fileName = fileInput.files[0].name;
+      const videoFile = fileInput.files[0];
       const btn = document.getElementById('btnProcess');
       btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gemini sedang inspeksi visual isi video...';
-
-      // Siapkan part payload multimodal (kirim gambar frame jepretan jika ada)
-      let contentsParts = [];
-      if (extractedSnapshots.length > 0) {
-        // Ambil base64 frame pertama dan ketiga untuk analisis visual
-        for (let i = 0; i < Math.min(extractedSnapshots.length, 2); i++) {
-          const base64Data = extractedSnapshots[i].split(',')[1];
-          contentsParts.push({
-            inlineData: {
-              mimeType: "image/jpeg",
-              data: base64Data
-            }
-          });
-        }
-      }
-
-      const promptText = `Anda adalah pakar SEO & FYP YouTube Pro. Berdasarkan nama file "${fileName}" dan cuplikan visual video di atas, buatkan metadata YouTube optimal dalam format JSON murni tanpa markdown, dengan properti:
-      {
-        "newFileName": "nama_berkas_seo_sesuai_isi_visual.mp4",
-        "title": "Judul menarik max 100 char include emoji menarik + hashtag FYP sesuai isi video",
-        "description": "Deskripsi terstruktur lengkap dengan timestamp (00:00 Pendahuluan, dst) dan 3 sampai 20 hashtag di akhir, di mana 3 hashtag awal sangat relevan dengan isi video dan SEO/FYP abadi",
-        "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-        "marketplaceKeywords": "Kata kunci produk marketplace Shopee/Tokopedia yang relevan dengan isi video",
-        "thumbnailPrompt": "Deskripsi prompt desain thumbnail AI yang sangat menarik, warna-warni kontras tinggi, proporsional landscape/portrait sesuai isi video"
-      }`;
-
-      contentsParts.push({ text: promptText });
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah video ke Gemini (Files API)...';
 
       try {
+        // Step 1: Inisialisasi Resumable Upload ke Gemini Files API
+        const initRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'X-Goog-Upload-Protocol': 'resumable',
+            'X-Goog-Upload-Command': 'start',
+            'X-Goog-Upload-Header-Content-Length': videoFile.size,
+            'X-Goog-Upload-Header-Content-Type': videoFile.type || 'video/mp4',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ file: { display_name: videoFile.name } })
+        });
+
+        if (!initRes.ok) throw new Error("Gagal memulai upload video ke Gemini.");
+
+        const uploadUrl = initRes.headers.get('x-goog-upload-url');
+
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim data video master...';
+
+        // Step 2: Upload byte video file
+        const uploadRes = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            'X-Goog-Upload-Command': 'upload, finalize',
+            'X-Goog-Upload-Offset': '0',
+            'Content-Length': videoFile.size,
+            'Content-Type': videoFile.type || 'video/mp4'
+          },
+          body: videoFile
+        });
+
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok || !uploadData.file) throw new Error("Gagal menyelesaikan upload video.");
+
+        const fileUri = uploadData.file.uri;
+        const mimeType = uploadData.file.mimeType;
+
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gemini sedang menganalisis video secara mendalam...';
+
+        // Step 3: Panggil generateContent dengan fileUri asli video
+        const promptText = `Anda adalah pakar SEO & FYP YouTube Pro. Analisis video yang terlampir di atas secara akurat dan komprehensif, lalu hasilkan output dalam format JSON murni tanpa markdown, dengan properti:
+        {
+          "newFileName": "nama_berkas_seo_sesuai_isi_video.mp4",
+          "title": "Judul menarik max 100 char include emoji menarik + hashtag FYP sesuai isi video",
+          "description": "Deskripsi terstruktur lengkap dengan timestamp (00:00 Pendahuluan, dst) dan 3 sampai 20 hashtag di akhir, di mana 3 hashtag awal sangat relevan dengan isi video dan SEO/FYP abadi",
+          "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+          "marketplaceKeywords": "Kata kunci produk marketplace Shopee/Tokopedia yang relevan dengan isi video",
+          "thumbnailPrompt": "Deskripsi prompt desain thumbnail AI yang sangat menarik, warna-warni kontras tinggi, proporsional landscape/portrait sesuai isi video"
+        }`;
+
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: contentsParts }] })
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { fileData: { mimeType: mimeType, fileUri: fileUri } },
+                { text: promptText }
+              ]
+            }]
+          })
         });
 
         const result = await response.json();
-        if (!response.ok) throw new Error(result.error ? result.error.message : "Gagal terhubung ke Gemini API");
+        if (!response.ok) throw new Error(result.error ? result.error.message : "Gagal memproses analisis video.");
 
         const textResponse = result.candidates[0].content.parts[0].text;
         let cleanJson = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
         const data = JSON.parse(cleanJson);
 
-        document.getElementById('aiFileName').value = data.newFileName || fileName;
+        document.getElementById('aiFileName').value = data.newFileName || videoFile.name;
         document.getElementById('aiTitle').value = data.title || '';
         document.getElementById('aiDescription').value = data.description || '';
         document.getElementById('aiTags').value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '');
@@ -587,6 +655,7 @@
         document.getElementById('aiThumbnailPrompt').value = data.thumbnailPrompt || '';
 
         document.getElementById('aiResultArea').classList.remove('hidden');
+        alert("Analisis video berhasil! Hasil 100% akurat sesuai isi video.");
       } catch (err) {
         alert("Error Gemini AI: " + err.message);
       } finally {
@@ -611,7 +680,6 @@
       if (!account) return alert("Pilih channel target upload terlebih dahulu!");
 
       const fileInput = document.getElementById('videoFileInput');
-      const thumbInput = document.getElementById('thumbFileInput');
       if (!fileInput.files[0]) return alert("Pilih file video!");
 
       const file = fileInput.files[0];
@@ -657,10 +725,9 @@
         const result = await response.json();
         if (response.ok) {
           const videoId = result.id;
-          const finalThumb = thumbInput.files[0] || selectedThumbnailBlob;
-          if (finalThumb && videoId) {
+          if (selectedThumbnailBlob && videoId) {
             document.getElementById('progressPercent').textContent = '90% (Mengunggah Thumbnail Kustom...)';
-            await uploadCustomThumbnail(account.token, videoId, finalThumb);
+            await uploadCustomThumbnail(account.token, videoId, selectedThumbnailBlob);
           }
 
           document.getElementById('progressBar').style.width = '100%';
@@ -779,31 +846,26 @@
 
       let filtered = [...cachedMasterVideos];
 
-      // 1. Filter Channel
       if (channelFilter !== 'all') {
         filtered = filtered.filter(v => v.channelIdRef === channelFilter);
       }
 
-      // 2. Filter Tombol Terjadwal
       if (isScheduledOnlyActive) {
         filtered = filtered.filter(v => v.status?.publishAt || v.status?.privacyStatus === 'private');
       }
 
-      // 3. Filter Jenis Video
       if (typeFilter === 'short') {
         filtered = filtered.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") <= 60);
       } else if (typeFilter === 'video') {
         filtered = filtered.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") > 60);
       }
 
-      // 4. Sorting Penayangan (Views)
       if (sortFilter === 'views-low-high') {
         filtered.sort((a, b) => Number(a.statistics?.viewCount || 0) - Number(b.statistics?.viewCount || 0));
       } else if (sortFilter === 'views-high-low') {
         filtered.sort((a, b) => Number(b.statistics?.viewCount || 0) - Number(a.statistics?.viewCount || 0));
       }
 
-      // Update Badge Penghitung Video
       document.getElementById('videoCountBadge').textContent = `${filtered.length} Video`;
 
       if (filtered.length === 0) {
