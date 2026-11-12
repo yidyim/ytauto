@@ -3,41 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube Automator Pro - Pro Thumbnail Studio</title>
+  <title>YouTube Automator Pro - Prompt Generator & Fixed Preview</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans min-h-screen">
   
   <!-- Header Navbar -->
-  <header class="bg-gray-800 border-b border-gray-700 py-3 px-6 flex justify-between items-center shadow-md">
-    <h1 class="text-lg font-bold text-red-500 flex items-center gap-2">
-      <i class="fa-brands fa-youtube text-2xl"></i> YT Studio Mobile Pro
+  <header class="bg-gray-800 border-b border-gray-700 py-3 px-4 sm:px-6 flex justify-between items-center shadow-md">
+    <h1 class="text-base sm:text-lg font-bold text-red-500 flex items-center gap-2">
+      <i class="fa-brands fa-youtube text-xl sm:text-2xl"></i> YT Studio Mobile Pro
     </h1>
     <div class="flex items-center gap-2">
-      <button onclick="openSettingsModal()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
-        <i class="fa-solid fa-gear text-blue-400"></i> Pengaturan API & Kunci
+      <button onclick="openSettingsModal()" class="bg-gray-700 hover:bg-gray-600 text-white px-2.5 sm:px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+        <i class="fa-solid fa-gear text-blue-400"></i> <span class="hidden sm:inline">Pengaturan API</span>
       </button>
-      <button onclick="loginYouTube()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
-        <i class="fa-solid fa-user-plus"></i> Hubungkan Channel
+      <button onclick="loginYouTube()" class="bg-red-600 hover:bg-red-700 text-white px-2.5 sm:px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+        <i class="fa-solid fa-user-plus"></i> <span class="hidden sm:inline">Channel</span>
       </button>
     </div>
   </header>
 
-  <!-- Modal Pengaturan Terpisah -->
+  <!-- Modal Pengaturan -->
   <div id="settingsModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
     <div class="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
       <div class="flex border-b border-gray-700 bg-gray-900/50">
-        <button onclick="switchSettingTab('tabGemini')" id="btnTabGemini" class="flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 transition">1. Konfigurasi Gemini API</button>
-        <button onclick="switchSettingTab('tabGoogle')" id="btnTabGoogle" class="flex-1 py-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition">2. Konfigurasi Google OAuth</button>
+        <button onclick="switchSettingTab('tabGemini')" id="btnTabGemini" class="flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 transition">1. Gemini API</button>
+        <button onclick="switchSettingTab('tabGoogle')" id="btnTabGoogle" class="flex-1 py-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition">2. Google OAuth</button>
       </div>
 
-      <div class="p-6 space-y-4">
-        <!-- Tab 1: Gemini -->
+      <div class="p-5 sm:p-6 space-y-4">
         <div id="contentTabGemini" class="space-y-3">
           <label class="block text-xs font-semibold text-gray-300">Gemini API Key:</label>
           <input type="password" id="cookieGeminiKey" placeholder="AIzaSy..." class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-xs text-white">
-          <p class="text-[11px] text-gray-400">Kunci utama untuk analisis video, SEO, & kategori otomatis.</p>
+          <p class="text-[11px] text-gray-400">Kunci utama untuk analisis video, SEO, dan pembuatan prompt gambar.</p>
           
           <div class="pt-2">
             <label class="block text-xs font-semibold text-gray-300 mb-1">Pilih Model Gemini:</label>
@@ -48,12 +47,11 @@
                 <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                 <option value="gemini-3.8-flash">Gemini 3.8 Flash</option>
               </select>
-              <button onclick="fetchAvailableModels()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">Cek Model</button>
+              <button onclick="fetchAvailableModels()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">Cek</button>
             </div>
           </div>
         </div>
 
-        <!-- Tab 2: Google OAuth -->
         <div id="contentTabGoogle" class="space-y-3 hidden">
           <label class="block text-xs font-semibold text-gray-300">Google Client ID (OAuth 2.0):</label>
           <input type="text" id="cookieClientId" placeholder="xxxxxx.apps.googleusercontent.com" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-xs text-white">
@@ -61,19 +59,19 @@
 
         <div class="border-t border-gray-700 pt-4 flex justify-end gap-2">
           <button onclick="closeSettingsModal()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-xs font-semibold">Batal</button>
-          <button onclick="saveSettingsAndClose()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-xs font-semibold shadow">Simpan & Tutup</button>
+          <button onclick="saveSettingsAndClose()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-xs font-semibold shadow">Simpan</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Konten Utama -->
-  <div class="container mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <div class="container mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
     
     <!-- Kiri: Upload & AI Automation -->
-    <div class="lg:col-span-6 bg-gray-800 rounded-2xl p-5 border border-gray-700 space-y-4 shadow-lg">
+    <div class="lg:col-span-6 bg-gray-800 rounded-2xl p-4 sm:p-5 border border-gray-700 space-y-4 shadow-lg">
       <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
+        <h2 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
           <i class="fa-solid fa-cloud-arrow-up"></i> Upload & AI Otomasi Video Pro
         </h2>
         <span id="activeModelBadge" class="bg-blue-900/60 text-blue-300 text-[10px] px-2.5 py-1 rounded-full font-mono font-medium border border-blue-700/50">
@@ -94,45 +92,41 @@
           <input type="file" id="videoFileInput" accept="video/*" onchange="handleVideoSelection()" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700">
         </div>
         <div>
-          <label class="block text-xs font-semibold mb-1">Berkas Thumbnail (Galeri):</label>
+          <label class="block text-xs font-semibold mb-1">Pilih Thumbnail dari Galeri:</label>
           <input type="file" id="thumbFileInput" accept="image/*" onchange="handleCustomThumbnailSelection(event)" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
         </div>
       </div>
 
-      <!-- Preview Thumbnail Terpilih & Studio Editor Meriah -->
-      <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-700 space-y-3">
+      <!-- PREVIEW THUMBNAIL (DIJAMIN TIDAK MLENCONG / RESPONSIVE DI HP) -->
+      <div class="bg-gray-900/60 p-3 sm:p-4 rounded-xl border border-gray-700 space-y-2">
         <div class="flex items-center justify-between">
           <label class="text-xs font-bold text-purple-400 flex items-center gap-1.5">
-            <i class="fa-solid fa-image"></i> Preview Thumbnail Terpilih (Aktual YouTube):
+            <i class="fa-solid fa-image"></i> Preview Thumbnail YouTube (16:9):
           </label>
-          <span id="thumbSourceLabel" class="text-[11px] text-gray-400 font-medium">Belum ada thumbnail</span>
+          <span id="thumbSourceLabel" class="text-[10px] sm:text-[11px] text-gray-400 font-medium">Belum ada</span>
         </div>
 
+        <!-- Wadah aspect-video w-full menjamin gambar proporsional di HP & Laptop -->
         <div class="w-full aspect-video bg-black border-2 border-purple-500/40 rounded-xl overflow-hidden flex items-center justify-center relative shadow-xl">
-          <img id="activeThumbnailPreview" src="" class="w-full h-full object-cover hidden">
-          <div id="noThumbPlaceholder" class="text-center text-gray-500 text-xs">
+          <img id="activeThumbnailPreview" src="" class="w-full h-full object-contain hidden">
+          <div id="noThumbPlaceholder" class="text-center text-gray-500 text-xs p-4">
             <i class="fa-regular fa-image text-3xl mb-1 text-gray-600"></i><br>
-            Belum ada thumbnail dipilih.<br>Pilih dari frame video atau galeri di bawah.
+            Belum ada thumbnail dipilih.<br>Pilih dari galeri atau frame video di bawah.
           </div>
         </div>
 
-        <!-- Tombol Ajaib: Buat Thumbnail Gaya YouTube Pro (Meriah & Ber-outline Teks) -->
-        <button onclick="generateProYouTubeThumbnail()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-2 rounded-xl text-xs font-bold shadow flex items-center justify-center gap-2 transition">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ Sulap Jadi Thumbnail Meriah (Gaya YouTube Pro)
-        </button>
-
         <!-- Pilihan Jepretan Frame Video -->
         <div id="snapshotSection" class="hidden pt-2 border-t border-gray-800 space-y-1.5">
-          <label class="block text-[11px] font-semibold text-gray-300">Pilih dari jepretan frame video:</label>
-          <div id="snapshotGrid" class="grid grid-cols-4 gap-2"></div>
+          <label class="block text-[11px] font-semibold text-gray-300">Atau pilih dari frame video:</label>
+          <div id="snapshotGrid" class="grid grid-cols-4 gap-1.5 sm:gap-2"></div>
         </div>
       </div>
 
       <button id="btnProcess" onclick="processVideoWithAI()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2 shadow">
-        <i class="fa-solid fa-brain"></i> Analisis Video & Buat SEO Metadata Pro
+        <i class="fa-solid fa-brain"></i> Analisis Video & Buat SEO & Prompt Thumbnail AI
       </button>
 
-      <!-- Hasil AI Metadata -->
+      <!-- Hasil AI Metadata & Prompt Generator -->
       <div id="aiResultArea" class="hidden space-y-3 border-t border-gray-700 pt-3">
         <div>
           <label class="block text-[11px] font-semibold text-green-400 mb-1">1. Nama Berkas (Auto-Rename):</label>
@@ -145,21 +139,35 @@
         </div>
 
         <div>
-          <label class="block text-[11px] font-semibold mb-1">3. Deskripsi Lengkap (Timestamps & 3-20 Hashtag):</label>
+          <label class="block text-[11px] font-semibold mb-1">3. Deskripsi Lengkap (Timestamps & Hashtag):</label>
           <textarea id="aiDescription" rows="4" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs"></textarea>
         </div>
 
         <div>
-          <label class="block text-[11px] font-semibold mb-1">4. Video Tags (Keywords, Variasi & Typo, Max 400 Char):</label>
+          <label class="block text-[11px] font-semibold mb-1">4. Video Tags (Keywords, Max 400 Char):</label>
           <input type="text" id="aiTags" maxlength="400" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs">
         </div>
 
+        <!-- KOTAK PROMPT THUMBNAIL AI & TOMBOL COPY -->
+        <div class="bg-purple-950/30 p-3 rounded-xl border border-purple-800/60 space-y-2">
+          <div class="flex justify-between items-center">
+            <label class="text-[11px] font-bold text-purple-300 flex items-center gap-1">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> 5. Prompt Thumbnail AI (Viral, Warna-Warni, & Teks):
+            </label>
+            <button onclick="copyThumbnailPrompt()" class="bg-purple-600 hover:bg-purple-700 text-white px-2.5 py-1 rounded text-[10px] font-semibold transition flex items-center gap-1 shadow">
+              <i class="fa-solid fa-copy"></i> Copy Prompt
+            </button>
+          </div>
+          <textarea id="aiThumbnailPrompt" rows="3" readonly class="w-full bg-gray-900 border border-purple-900 rounded-lg p-2 text-[11px] font-mono text-purple-200 select-all"></textarea>
+          <p class="text-[10px] text-gray-400">Salin prompt di atas, paste ke ChatGPT, lalu download hasilnya dan upload via tombol "Pilih Thumbnail dari Galeri" di atas.</p>
+        </div>
+
         <div>
-          <label class="block text-[11px] font-semibold text-yellow-400 mb-1">5. Saran Kata Kunci Marketplace (Shopee/Tokopedia):</label>
+          <label class="block text-[11px] font-semibold text-yellow-400 mb-1">6. Saran Kata Kunci Marketplace (Shopee/Tokopedia):</label>
           <input type="text" id="aiMarketplace" readonly class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-xs text-yellow-300">
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-[11px] font-semibold mb-1">Kategori (Auto-Select AI):</label>
             <select id="aiCategory" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white">
@@ -214,18 +222,18 @@
     </div>
 
     <!-- Kanan: YouTube Studio Mobile Dashboard -->
-    <div class="lg:col-span-6 bg-gray-800 rounded-2xl p-5 border border-gray-700 flex flex-col h-[750px] shadow-lg">
-      <h2 class="text-sm font-bold uppercase tracking-wider text-purple-400 border-b border-gray-700 pb-2 mb-3 flex items-center justify-between">
+    <div class="lg:col-span-6 bg-gray-800 rounded-2xl p-4 sm:p-5 border border-gray-700 flex flex-col h-[650px] sm:h-[750px] shadow-lg">
+      <h2 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-400 border-b border-gray-700 pb-2 mb-3 flex items-center justify-between">
         <span class="flex items-center gap-2">
           <i class="fa-solid fa-mobile-screen-button"></i> YT Studio Dashboard 
           <span id="videoCountBadge" class="bg-purple-900/60 text-purple-300 text-[10px] px-2 py-0.5 rounded-full font-normal">0 Video</span>
         </span>
-        <button onclick="forceRefreshDashboard()" class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-2.5 py-1 rounded-lg" title="Ambil data baru"><i class="fa-solid fa-rotate"></i> Refresh API</button>
+        <button onclick="forceRefreshDashboard()" class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-2.5 py-1 rounded-lg" title="Ambil data baru"><i class="fa-solid fa-rotate"></i> Refresh</button>
       </h2>
 
       <!-- Filter Bar Dashboard -->
-      <div class="space-y-2 mb-3 bg-gray-900/40 p-3 rounded-xl border border-gray-700/60">
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+      <div class="space-y-2 mb-3 bg-gray-900/40 p-2.5 sm:p-3 rounded-xl border border-gray-700/60">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
           <div>
             <label class="block text-[10px] text-gray-400 mb-0.5">Channel:</label>
             <select id="dashboardChannelFilter" onchange="renderDashboardFromCache()" class="w-full bg-gray-700 text-[11px] rounded p-1.5 border border-gray-600 text-white">
@@ -254,7 +262,7 @@
             <label class="block text-[10px] text-gray-400 mb-0.5">Produk:</label>
             <select id="dashboardProductFilter" onchange="renderDashboardFromCache()" class="w-full bg-gray-700 text-[11px] rounded p-1.5 border border-gray-600 text-white">
               <option value="all">Semua Produk</option>
-              <option value="shopee">Shopee Affiliated</option>
+              <option value="shopee">Shopee</option>
               <option value="tokopedia">Tokopedia</option>
             </select>
           </div>
@@ -270,9 +278,9 @@
 
         <div class="flex items-center justify-between pt-1 border-t border-gray-800">
           <button id="btnFilterScheduled" onclick="toggleScheduledFilter()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 text-[11px] px-3 py-1 rounded-lg transition flex items-center gap-1.5">
-            <i class="fa-regular fa-clock text-blue-400"></i> Filter Terjadwal Saja
+            <i class="fa-regular fa-clock text-blue-400"></i> Terjadwal Saja
           </button>
-          <span id="activeChannelLabel" class="text-[10px] text-gray-400 truncate max-w-[180px]">Channel: Semua</span>
+          <span id="activeChannelLabel" class="text-[10px] text-gray-400 truncate max-w-[150px]">Channel: Semua</span>
         </div>
       </div>
 
@@ -280,7 +288,7 @@
       <div id="videoListContainer" class="flex-1 overflow-y-auto space-y-2.5 pr-1">
         <div class="text-center text-gray-500 text-xs mt-16">
           <i class="fa-solid fa-video-slash text-3xl mb-2 text-gray-600"></i><br>
-          Belum ada data video dimuat.<br>Klik tombol <b>"Refresh API"</b> di atas.
+          Belum ada data video dimuat.<br>Klik tombol <b>"Refresh"</b> di atas.
         </div>
       </div>
     </div>
@@ -348,7 +356,7 @@
       setCookie('yt_gemini_model', selectedModel);
 
       updateActiveModelBadge();
-      alert("Pengaturan dan pilihan model berhasil disimpan!");
+      alert("Pengaturan berhasil disimpan!");
       closeSettingsModal();
     }
 
@@ -425,7 +433,7 @@
     function loginYouTube() {
       const clientId = getCookie('yt_client_id');
       if (!clientId) {
-        alert("Google Client ID belum diatur di Cookies! Silakan buka Pengaturan API & Kunci.");
+        alert("Google Client ID belum diatur! Silakan buka Pengaturan.");
         openSettingsModal();
         switchSettingTab('tabGoogle');
         return;
@@ -466,7 +474,7 @@
 
     async function fetchAvailableModels() {
       const apiKey = getCookie('yt_gemini_key') || document.getElementById('cookieGeminiKey').value.trim();
-      if (!apiKey) return alert("Masukkan Gemini API Key terlebih dahulu di tab Gemini!");
+      if (!apiKey) return alert("Masukkan Gemini API Key terlebih dahulu!");
 
       const select = document.getElementById('geminiModelSelect');
       select.innerHTML = '<option>Memuat model...</option>';
@@ -486,13 +494,14 @@
           opt.textContent = `${m.displayName || name} (${name})`;
           select.appendChild(opt);
         });
-        alert(`Berhasil memuat ${generateModels.length} model Gemini terbaru!`);
+        alert(`Berhasil memuat ${generateModels.length} model Gemini!`);
       } catch (err) {
         alert("Gagal memuat model: " + err.message);
         select.innerHTML = '<option value="gemini-1.5-flash">Gemini 1.5 Flash (Default)</option>';
       }
     }
 
+    // UPDATE PREVIEW THUMBNAIL AGAR TIDAK MLENCONG DI HP (MENGGUNAKAN object-contain)
     function updateActiveThumbnailPreview(src, labelText) {
       const previewImg = document.getElementById('activeThumbnailPreview');
       const placeholder = document.getElementById('noThumbPlaceholder');
@@ -507,7 +516,7 @@
         previewImg.src = "";
         previewImg.classList.add('hidden');
         placeholder.classList.remove('hidden');
-        label.textContent = "Belum ada thumbnail";
+        label.textContent = "Belum ada";
         selectedThumbnailBlob = null;
       }
     }
@@ -562,21 +571,10 @@
               .then(res => res.blob())
               .then(blob => {
                 selectedThumbnailBlob = new File([blob], `snapshot_${i + 1}.jpg`, { type: 'image/jpeg' });
-                updateActiveThumbnailPreview(dataUrl, "Jepretan Frame Video Asli");
+                updateActiveThumbnailPreview(dataUrl, "Frame Video Asli");
               });
           };
           snapshotGrid.appendChild(div);
-        }
-
-        // Otomatis pilih frame pertama
-        if (base64Snapshots.length > 0) {
-          const defaultDataUrl = snapshotGrid.querySelector('img').src;
-          fetch(defaultDataUrl)
-            .then(res => res.blob())
-            .then(blob => {
-              selectedThumbnailBlob = new File([blob], "snapshot_default.jpg", { type: 'image/jpeg' });
-              updateActiveThumbnailPreview(defaultDataUrl, "Jepretan Frame Video (Default)");
-            });
         }
 
         URL.revokeObjectURL(video.src);
@@ -589,98 +587,17 @@
         selectedThumbnailBlob = file;
         const reader = new FileReader();
         reader.onload = function(e) {
-          updateActiveThumbnailPreview(e.target.result, "File Galeri Kustom");
+          updateActiveThumbnailPreview(e.target.result, "Galeri HP/PC");
         };
         reader.readAsDataURL(file);
       }
     }
 
-    // --- FITUR BARU: SULAP THUMBNAIL JADI MERIAH ALA YOUTUBER PRO (CANVAS) ---
-    function generateProYouTubeThumbnail() {
-      const activeImgSrc = document.getElementById('activeThumbnailPreview').src || (base64Snapshots.length > 0 ? `data:image/jpeg;base64,${base64Snapshots[0]}` : null);
-      
-      if (!activeImgSrc) {
-        alert("Pilih atau unggah video terlebih dahulu untuk mendapatkan gambar dasar thumbnail!");
-        return;
-      }
-
-      const canvas = document.createElement('canvas');
-      canvas.width = 1280;
-      canvas.height = 720;
-      const ctx = canvas.getContext('2d');
-
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = function() {
-        // 1. Gambar video frame asli
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        // 2. Berikan efek vignetting / gradasi gelap di pinggir agar dramatis
-        const grad = ctx.createRadialGradient(640, 360, 250, 640, 360, 700);
-        grad.addColorStop(0, 'rgba(0,0,0,0)');
-        grad.addColorStop(1, 'rgba(0,0,0,0.65)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // 3. Tambahkan Badge Atas (Contoh: "🔥 WAJIB COBA")
-        ctx.save();
-        ctx.fillStyle = '#FF0055';
-        ctx.beginPath();
-        ctx.roundRect(60, 60, 260, 70, 35);
-        ctx.fill();
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.stroke();
-
-        ctx.font = 'bold 28px Arial, sans-serif';
-        ctx.fillStyle = '#FFFFFF';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText("🔥 WAJIB COBA!", 190, 95);
-        ctx.restore();
-
-        // 4. Ambil teks judul dari input AI (atau gunakan teks default menarik)
-        let mainText = document.getElementById('aiTitle').value || "4 GERAKAN AWET MUDA!";
-        // Bersihkan hashtag atau emoji berlebih jika ada agar teks di thumbnail bersih
-        mainText = mainText.replace(/[\#\_]/g, '').substring(0, 35).toUpperCase();
-
-        // 5. Render Teks YouTube Style (Kuning Terang dengan Garis Tepi Tebal Hitam)
-        ctx.save();
-        ctx.font = '900 75px Arial, sans-serif';
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'bottom';
-        
-        ctx.lineWidth = 20;
-        ctx.strokeStyle = '#000000'; // Outline hitam tebal
-        ctx.fillStyle = '#FFE600';   // Warna kuning mencolok
-
-        const x = canvas.width - 60;
-        let y = canvas.height - 80;
-
-        // Bagi teks menjadi 2 baris jika panjang
-        const words = mainText.split(' ');
-        const mid = Math.ceil(words.length / 2);
-        const line1 = words.slice(0, mid).join(' ');
-        const line2 = words.slice(mid).join(' ');
-
-        if (line2) {
-          ctx.strokeText(line2, x, y);
-          ctx.fillText(line2, x, y);
-          y -= 85;
-        }
-        ctx.strokeText(line1, x, y);
-        ctx.fillText(line1, x, y);
-        ctx.restore();
-
-        // 6. Konversi ke Blob untuk siap upload ke YouTube
-        canvas.toBlob(function(blob) {
-          selectedThumbnailBlob = new File([blob], "pro_thumbnail.png", { type: 'image/png' });
-          const proDataUrl = canvas.toDataURL('image/png');
-          updateActiveThumbnailPreview(proDataUrl, "Thumbnail Pro Meriah (Canvas Studio)");
-          alert("Berhasil! Thumbnail Anda sekarang tampil meriah dengan teks tebal dan warna mencolok ala YouTuber Pro!");
-        }, 'image/png', 0.95);
-      };
-      img.src = activeImgSrc;
+    function copyThumbnailPrompt() {
+      const promptText = document.getElementById('aiThumbnailPrompt');
+      promptText.select();
+      navigator.clipboard.writeText(promptText.value);
+      alert("Prompt Thumbnail AI berhasil disalin! Silakan paste ke ChatGPT.");
     }
 
     function toggleScheduleInput() {
@@ -697,14 +614,14 @@
       }
     }
 
-    // FUNGSI ANALISIS VIDEO & KATEGORI OTOMATIS OLEH GEMINI
+    // ANALISIS VIDEO & GENERATE PROMPT GAMBAR OLEH GEMINI
     async function processVideoWithAI() {
       const apiKey = getCookie('yt_gemini_key');
       const selectedModel = getCookie('yt_gemini_model') || 'gemini-1.5-flash';
       const fileInput = document.getElementById('videoFileInput');
 
       if (!apiKey) {
-        alert("Gemini API Key belum diatur di Cookies!");
+        alert("Gemini API Key belum diatur!");
         openSettingsModal();
         return;
       }
@@ -728,7 +645,8 @@
   "description": "Deskripsi terstruktur, timestamps 00:00 Pendahuluan, & hashtag SEO",
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
   "marketplaceKeywords": "Kata kunci Shopee/Tokopedia",
-  "categoryId": "Nomor ID kategori YouTube (17 untuk Olahraga, 27 untuk Pendidikan, 26 untuk Cara & Gaya, 22 untuk Blog & Orang, 24 untuk Hiburan)"
+  "categoryId": "Nomor ID kategori YouTube (17 untuk Olahraga, 27 untuk Pendidikan, 26 untuk Cara & Gaya, 22 untuk Blog & Orang, 24 untuk Hiburan)",
+  "thumbnailPrompt": "Detailed English prompt for ChatGPT/DALL-E 3 to create a vibrant, high-contrast, professional YouTube thumbnail (16:9 landscape) with expressive human face, colorful neon glowing icons related to the video topic, bold clean text space, hyper-realistic, viral style."
 }` });
 
       try {
@@ -749,6 +667,7 @@
         document.getElementById('aiTitle').value = data.title || '';
         document.getElementById('aiDescription').value = data.description || '';
         document.getElementById('aiTags').value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '');
+        document.getElementById('aiThumbnailPrompt').value = data.thumbnailPrompt || '';
         document.getElementById('aiMarketplace').value = data.marketplaceKeywords || '';
 
         if (data.categoryId) {
@@ -756,13 +675,13 @@
         }
 
         document.getElementById('aiResultArea').classList.remove('hidden');
-        alert("Analisis SEO & Kategori Selesai! Anda sekarang bisa mengklik tombol 'Sulap Jadi Thumbnail Meriah' di atas.");
+        alert("Analisis SEO & Prompt Thumbnail AI Selesai!");
 
       } catch (err) {
         alert("Error Analisis AI: " + err.message);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-brain"></i> Analisis Video & Buat SEO Metadata Pro';
+        btn.innerHTML = '<i class="fa-solid fa-brain"></i> Analisis Video & Buat SEO & Prompt Thumbnail AI';
       }
     }
 
@@ -836,7 +755,7 @@
         if (response.ok) {
           const videoId = result.id;
           if (selectedThumbnailBlob && videoId) {
-            document.getElementById('progressPercent').textContent = '90% (Mengunggah Thumbnail Pro...)';
+            document.getElementById('progressPercent').textContent = '90% (Mengunggah Thumbnail...)';
             await uploadCustomThumbnail(account.token, videoId, selectedThumbnailBlob);
           }
 
@@ -876,7 +795,7 @@
       const container = document.getElementById('videoListContainer');
 
       if (accounts.length === 0) {
-        container.innerHTML = `<div class="text-center text-gray-500 text-xs mt-16"><i class="fa-solid fa-video-slash text-3xl mb-2"></i><br>Belum ada akun channel terhubung.</div>`;
+        container.innerHTML = `<div class="text-center text-gray-500 text-xs mt-16">Belum ada akun channel terhubung.</div>`;
         return;
       }
 
@@ -923,7 +842,7 @@
         btn.innerHTML = '<i class="fa-solid fa-clock"></i> Terjadwal (Aktif)';
       } else {
         btn.className = "bg-gray-700 text-gray-300 text-[11px] px-3 py-1 rounded-lg transition flex items-center gap-1.5";
-        btn.innerHTML = '<i class="fa-regular fa-clock text-blue-400"></i> Filter Terjadwal Saja';
+        btn.innerHTML = '<i class="fa-regular fa-clock text-blue-400"></i> Terjadwal Saja';
       }
       renderDashboardFromCache();
     }
@@ -935,7 +854,7 @@
       const sortFilter = document.getElementById('dashboardSortFilter').value;
 
       if (!cachedMasterVideos || cachedMasterVideos.length === 0) {
-        container.innerHTML = `<div class="text-center text-gray-500 text-xs mt-16">Belum ada data video. Klik "Refresh API".</div>`;
+        container.innerHTML = `<div class="text-center text-gray-500 text-xs mt-16">Belum ada data video. Klik "Refresh".</div>`;
         document.getElementById('videoCountBadge').textContent = '0 Video';
         return;
       }
