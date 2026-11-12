@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube Automator Pro - HD Preview & Fixed AI</title>
+  <title>YouTube Automator Pro - Smart Category & Schedule</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -37,10 +37,10 @@
         <div id="contentTabGemini" class="space-y-3">
           <label class="block text-xs font-semibold text-gray-300">Gemini API Key:</label>
           <input type="password" id="cookieGeminiKey" placeholder="AIzaSy..." class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-xs text-white">
-          <p class="text-[11px] text-gray-400">Kunci untuk analisis visual video & SEO otomatis.</p>
+          <p class="text-[11px] text-gray-400">Kunci utama untuk analisis video, SEO, kategori otomatis, & prompt cerdas.</p>
           
           <div class="pt-2 border-t border-gray-700">
-            <label class="block text-xs font-semibold text-purple-300 mb-1">Stability.ai API Key (Thumbnail AI):</label>
+            <label class="block text-xs font-semibold text-purple-300 mb-1">Stability.ai API Key (Opsional untuk Thumbnail AI):</label>
             <input type="password" id="cookieStabilityKey" placeholder="sk-..." class="w-full bg-gray-700 border border-purple-900 rounded-lg p-2.5 text-xs text-purple-200">
           </div>
 
@@ -113,7 +113,6 @@
           <span id="thumbSourceLabel" class="text-[11px] text-gray-400 font-medium">Belum ada thumbnail</span>
         </div>
 
-        <!-- Wadah Preview Diperbesar Ukuran 16:9 Lanskap -->
         <div class="w-full aspect-video bg-black border-2 border-purple-500/40 rounded-xl overflow-hidden flex items-center justify-center relative shadow-xl">
           <img id="activeThumbnailPreview" src="" class="w-full h-full object-cover hidden">
           <div id="noThumbPlaceholder" class="text-center text-gray-500 text-xs">
@@ -124,15 +123,15 @@
 
         <!-- Pilihan Jepretan Frame Video -->
         <div id="snapshotSection" class="hidden pt-2 border-t border-gray-800 space-y-1.5">
-          <label class="block text-[11px] font-semibold text-gray-300">Pilih dari jepretan frame video:</label>
+          <label class="block text-[11px] font-semibold text-gray-300">Pilih dari jepretan frame video (Disarankan agar sesuai isi):</label>
           <div id="snapshotGrid" class="grid grid-cols-4 gap-2"></div>
         </div>
 
         <!-- Pilihan Thumbnail Buatan AI -->
         <div id="aiThumbnailChoicesArea" class="hidden pt-2 border-t border-purple-900 space-y-2 bg-purple-950/20 p-2.5 rounded-lg border border-purple-800/60">
           <label class="block text-xs font-semibold text-purple-300 flex items-center justify-between">
-            <span><i class="fa-solid fa-wand-magic-sparkles"></i> Pilihan Thumbnail Buatan AI (Klik untuk pakai):</span>
-            <span id="aiGenStatus" class="text-[11px] text-gray-400 hidden"><i class="fa-solid fa-spinner fa-spin"></i> Sedang membuat gambar...</span>
+            <span><i class="fa-solid fa-wand-magic-sparkles"></i> Pilihan Thumbnail Buatan AI:</span>
+            <span id="aiGenStatus" class="text-[11px] text-gray-400 hidden"><i class="fa-solid fa-spinner fa-spin"></i> Sedang membuat...</span>
           </label>
           <div id="aiThumbnailGrid" class="grid grid-cols-4 gap-2"></div>
         </div>
@@ -171,10 +170,10 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-[11px] font-semibold mb-1">Kategori:</label>
+            <label class="block text-[11px] font-semibold mb-1">Kategori (Auto-Select oleh AI):</label>
             <select id="aiCategory" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white">
               <option value="25">Berita & Politik</option>
-              <option value="22" selected>Blog & Orang</option>
+              <option value="22">Blog & Orang</option>
               <option value="26">Cara & Gaya</option>
               <option value="1">Film & Animasi</option>
               <option value="20">Game</option>
@@ -192,13 +191,20 @@
           </div>
           <div>
             <label class="block text-[11px] font-semibold mb-1">Visibilitas:</label>
-            <select id="uploadVisibility" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs">
-              <option value="scheduled">Dijadwalkan</option>
+            <select id="uploadVisibility" onchange="toggleScheduleInput()" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white">
               <option value="public">Publik</option>
+              <option value="scheduled">Dijadwalkan</option>
               <option value="private">Privat</option>
               <option value="unlisted">Tidak Publik</option>
             </select>
           </div>
+        </div>
+
+        <!-- Input Jadwal Otomatis Muncul Jika Pilih Dijadwalkan -->
+        <div id="scheduleContainer" class="hidden bg-gray-900/60 p-3 rounded-xl border border-blue-900/50 space-y-1.5">
+          <label class="block text-[11px] font-semibold text-blue-400"><i class="fa-regular fa-clock"></i> Tanggal & Waktu Penayangan Terjadwal:</label>
+          <input type="datetime-local" id="uploadScheduleTime" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white">
+          <p class="text-[10px] text-gray-400">Video akan diset otomatis menjadi privat dan dijadwalkan tayang pada waktu ini.</p>
         </div>
 
         <div id="progressContainer" class="hidden space-y-1">
@@ -571,11 +577,23 @@
               .then(res => res.blob())
               .then(blob => {
                 selectedThumbnailBlob = new File([blob], `snapshot_${i + 1}.jpg`, { type: 'image/jpeg' });
-                updateActiveThumbnailPreview(dataUrl, "Jepretan Frame Video");
+                updateActiveThumbnailPreview(dataUrl, "Jepretan Frame Video (Sesuai Asli)");
               });
           };
           snapshotGrid.appendChild(div);
         }
+
+        // OTOMATIS PILIH FRAME PERTAMA SEBAGAI DEFAULT THUMBNAIL
+        if (base64Snapshots.length > 0) {
+          const defaultDataUrl = snapshotGrid.querySelector('img').src;
+          fetch(defaultDataUrl)
+            .then(res => res.blob())
+            .then(blob => {
+              selectedThumbnailBlob = new File([blob], "snapshot_default.jpg", { type: 'image/jpeg' });
+              updateActiveThumbnailPreview(defaultDataUrl, "Jepretan Frame Video (Default)");
+            });
+        }
+
         URL.revokeObjectURL(video.src);
       };
     }
@@ -592,6 +610,23 @@
       }
     }
 
+    // TOGGLE INPUT WAKTU TERJADWAL
+    function toggleScheduleInput() {
+      const visibility = document.getElementById('uploadVisibility').value;
+      const scheduleContainer = document.getElementById('scheduleContainer');
+      if (visibility === 'scheduled') {
+        scheduleContainer.classList.remove('hidden');
+        // Set default besok jam 10 pagi
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(10, 0, 0, 0);
+        document.getElementById('uploadScheduleTime').value = tomorrow.toISOString().slice(0, 16);
+      } else {
+        scheduleContainer.classList.add('hidden');
+      }
+    }
+
+    // FUNGSI UTAMA ANALISIS VIDEO & KATEGORI OTOMATIS OLEH GEMINI
     async function processVideoWithAI() {
       const apiKey = getCookie('yt_gemini_key');
       const stabilityKey = getCookie('yt_stability_key');
@@ -626,16 +661,16 @@
         }
       }
 
-      contentsParts.push({ text: `Analisis video berdasarkan nama file "${fileName}" dan cuplikan visual di atas. Hasilkan output JSON murni (tanpa markdown) untuk metadata YouTube SEO Pro & FYP abadi. Berikan juga deskripsi prompt desain thumbnail AI (dalam Bahasa Inggris) yang sangat menarik, warna-warni kontras tinggi, proporsional landscape 16:9 sesuai isi video.
-
-Format JSON:
+      contentsParts.push({ text: `Analisis video berdasarkan nama file "${fileName}" dan cuplikan visual di atas secara mendalam agar sesuai konteks tema videonya (misal: olahraga, kesehatan, tutorial, hiburan, dll). 
+Hasilkan output JSON murni (tanpa markdown) dengan properti:
 {
   "newFileName": "nama_berkas_seo_sesuai_isi.mp4",
   "title": "Judul menarik max 100 char, emoji menarik, hashtag FYP sesuai isi",
   "description": "Deskripsi terstruktur, timestamps 00:00 Pendahuluan, dst, dan 3-20 hashtag di akhir, 3 hashtag awal sangat relevan dan SEO abadi",
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
   "marketplaceKeywords": "Kata kunci produk Shopee/Tokopedia yang relevan",
-  "thumbnailPrompt": "Descriptive English prompt for AI image generator (Stable Diffusion) to create a colorful, high-contrast, attention-grabbing YouTube thumbnail (16:9 landscape) based on the video content above."
+  "categoryId": "Nomor ID kategori YouTube yang paling tepat (Gunakan: 17 untuk Olahraga, 27 untuk Pendidikan, 26 untuk Cara & Gaya, 22 untuk Blog & Orang, 24 untuk Hiburan, 28 untuk Sains & Teknologi)",
+  "thumbnailPrompt": "Clean photographic prompt focused purely on realistic subject matter, professional lighting, photorealistic action shot related to the video topic, highly relevant, no random misspelled words."
 }` });
 
       try {
@@ -658,10 +693,17 @@ Format JSON:
         document.getElementById('aiTags').value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '');
         document.getElementById('aiMarketplace').value = data.marketplaceKeywords || '';
 
+        // AUTO-SELECT KATEGORI SESUAI HASIL ANALISIS GEMINI
+        if (data.categoryId) {
+          document.getElementById('aiCategory').value = data.categoryId;
+        }
+
         document.getElementById('aiResultArea').classList.remove('hidden');
 
         if (data.thumbnailPrompt && stabilityKey) {
           generateAIImagesAutomatically(data.thumbnailPrompt, stabilityKey);
+        } else if (!stabilityKey) {
+          aiGrid.innerHTML = '<div class="col-span-4 text-center py-2 text-xs text-yellow-400">Stability.ai API Key belum diatur. Gunakan jepretan frame video di atas agar thumbnail 100% akurat dengan isi video.</div>';
         } else {
           aiChoicesArea.classList.add('hidden');
         }
@@ -675,7 +717,6 @@ Format JSON:
       }
     }
 
-    // --- DIPERBAIKI: MENGGUNAKAN DIMENSI YANG DIDUKUNG STABILITY AI (1344x768) ---
     async function generateAIImagesAutomatically(promptText, apiKey) {
       const aiGrid = document.getElementById('aiThumbnailGrid');
       const aiGenStatus = document.getElementById('aiGenStatus');
@@ -686,8 +727,8 @@ Format JSON:
       const payload = {
         text_prompts: [{ text: promptText, weight: 1 }],
         cfg_scale: 7,
-        height: 768,  // Diperbaiki ke ukuran standar SDXL 16:9 yang didukung (1344x768)
-        width: 1344,  // Diperbaiki ke ukuran standar SDXL 16:9 yang didukung (1344x768)
+        height: 768,
+        width: 1344,
         samples: 4,
         steps: 30,
         style_preset: "cinematic"
@@ -756,14 +797,28 @@ Format JSON:
       const description = document.getElementById('aiDescription').value;
       const tags = document.getElementById('aiTags').value.split(',').map(t => t.trim());
       const categoryId = document.getElementById('aiCategory').value;
-      const privacyStatus = document.getElementById('uploadVisibility').value;
+      const visibility = document.getElementById('uploadVisibility').value;
+      const scheduleTimeInput = document.getElementById('uploadScheduleTime').value;
 
       if (!title) return alert("Judul video wajib diisi!");
 
+      let privacyStatus = visibility;
+      let publishAtIso = null;
+
+      if (visibility === 'scheduled') {
+        if (!scheduleTimeInput) return alert("Silakan tentukan tanggal dan waktu penayangan terjadwal!");
+        privacyStatus = 'private'; // API YouTube mensyaratkan video terjadwal berstatus private dengan publishAt
+        publishAtIso = new Date(scheduleTimeInput).toISOString();
+      }
+
       const metadata = {
         snippet: { title, description, tags, categoryId },
-        status: { privacyStatus: privacyStatus === 'scheduled' ? 'private' : privacyStatus }
+        status: { privacyStatus: privacyStatus }
       };
+
+      if (publishAtIso) {
+        metadata.status.publishAt = publishAtIso;
+      }
 
       document.getElementById('progressContainer').classList.remove('hidden');
       document.getElementById('progressBar').style.width = '30%';
@@ -970,7 +1025,7 @@ Format JSON:
             </div>
           </div>
         `;
-        container.item.appendChild(item);
+        container.appendChild(item);
       });
     }
 
