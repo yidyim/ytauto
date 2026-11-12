@@ -66,7 +66,7 @@
   </div>
 
   <!-- Konten Utama -->
-  <div class="container mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <div class="container mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
     
     <!-- Kiri: Upload & AI Automation -->
     <div class="lg:col-span-5 bg-gray-800 rounded-2xl p-4 sm:p-5 border border-gray-700 space-y-4 shadow-lg">
@@ -216,7 +216,7 @@
       </div>
     </div>
 
-    <!-- Kanan: YouTube Studio Mobile Dashboard -->
+    <!-- Kanan: YouTube Studio Mobile Dashboard (Persis Foto ke-2, Grid 2 3 4) -->
     <div class="lg:col-span-7 bg-gray-800 rounded-2xl p-4 sm:p-5 border border-gray-700 flex flex-col shadow-lg space-y-4">
       
       <!-- Header Dashboard -->
@@ -305,9 +305,9 @@
         </div>
       </div>
 
-      <!-- Real-time Video Grid Container -->
-      <div id="videoListContainer" class="flex-1 overflow-y-auto max-h-[550px] pr-1 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-        <div class="col-span-full text-center text-gray-500 text-xs mt-16">
+      <!-- Real-time Video Grid Container (Grid 2 HP, 3 Tab, 4 PC) -->
+      <div id="videoListContainer" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5">
+        <div class="col-span-full text-center text-gray-500 text-xs py-16">
           <i class="fa-solid fa-video-slash text-3xl mb-2 text-gray-600"></i><br>
           Belum ada data video dimuat.<br>Klik tombol <b>"Sync Live Data"</b> di atas.
         </div>
@@ -394,7 +394,7 @@
         contentGemini.classList.remove('hidden');
         contentGoogle.classList.add('hidden');
       } else {
-        btnGoogle.className = "flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-transparent transition";
+        btnGoogle.className = "flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 transition";
         btnGemini.className = "flex-1 py-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition";
         contentGoogle.classList.remove('hidden');
         contentGemini.classList.add('hidden');
@@ -810,17 +810,16 @@
       await loadRealtimeDashboardFromAPI();
     }
 
-    // DINAIKKAN KE 50 VIDEO AGAR LEBIH BANYAK YANG TERIMPORT
     async function loadRealtimeDashboardFromAPI() {
       const accounts = JSON.parse(localStorage.getItem('yt_multi_accounts') || '[]');
       const container = document.getElementById('videoListContainer');
 
       if (accounts.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center text-gray-500 text-xs mt-16">Belum ada akun channel terhubung.</div>`;
+        container.innerHTML = `<div class="col-span-full text-center text-gray-500 text-xs py-16">Belum ada akun channel terhubung.</div>`;
         return;
       }
 
-      container.innerHTML = '<div class="col-span-full text-center text-gray-400 text-xs mt-16"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br>Memuat data YouTube...</div>';
+      container.innerHTML = '<div class="col-span-full text-center text-gray-400 text-xs py-16"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br>Memuat data YouTube...</div>';
 
       let allVideos = [];
       for (let acc of accounts) {
@@ -875,7 +874,7 @@
       const sortFilter = document.getElementById('dashboardSortFilter').value;
 
       if (!cachedMasterVideos || cachedMasterVideos.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center text-gray-500 text-xs mt-16">Belum ada data video. Klik "Sync Live Data".</div>`;
+        container.innerHTML = `<div class="col-span-full text-center text-gray-500 text-xs py-16">Belum ada data video. Klik "Sync Live Data".</div>`;
         updateStats(0, 0, 0, 0);
         return;
       }
@@ -900,7 +899,7 @@
       updateStats(totalCount, shortsCount, longCount, scheduledCount);
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center text-gray-500 text-xs mt-16">Tidak ada video yang cocok dengan filter.</div>`;
+        container.innerHTML = `<div class="col-span-full text-center text-gray-500 text-xs py-16">Tidak ada video yang cocok dengan filter.</div>`;
         return;
       }
 
@@ -908,35 +907,55 @@
 
       filtered.forEach(v => {
         const item = document.createElement('div');
-        item.className = "bg-gray-800/90 hover:bg-gray-700/80 transition rounded-xl border border-gray-700 overflow-hidden flex flex-col shadow";
+        item.className = "bg-[#0d1117] hover:bg-gray-900 transition rounded-xl border border-gray-800 overflow-hidden flex flex-col justify-between shadow-md";
         
         const thumb = v.snippet.thumbnails.medium ? v.snippet.thumbnails.medium.url : '';
         const title = v.snippet.title;
         const durationSec = parseDurationInSeconds(v.contentDetails?.duration || "PT0S");
         const isShort = durationSec <= 60;
-        const views = Number(v.statistics?.viewCount || 0).toLocaleString();
-        const likes = Number(v.statistics?.likeCount || 0).toLocaleString();
-        const comments = Number(v.statistics?.commentCount || 0).toLocaleString();
-        const publishedDate = timeAgo(v.snippet.publishedAt);
+        const views = Number(v.statistics?.viewCount || 0).toLocaleString('id-ID');
+        const likes = Number(v.statistics?.likeCount || 0).toLocaleString('id-ID');
+        const comments = Number(v.statistics?.commentCount || 0).toLocaleString('id-ID');
+        const videoUrl = `https://www.youtube.com/watch?v=${v.id}`;
 
-        // DIPERBAIKI: Menggunakan tinggi tetap h-36 agar thumbnail tampil penuh proporsional
+        // Cek status dijadwalkan vs publik
+        let statusHtml = '';
+        if (v.status?.publishAt) {
+          const schedDate = new Date(v.status.publishAt);
+          const formattedDate = schedDate.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ', ' + schedDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          statusHtml = `<span class="text-[11px] font-medium text-yellow-400 flex items-center gap-1.5"><i class="fa-solid fa-clock text-yellow-400"></i> Dijadwalkan ${formattedDate}</span>`;
+        } else {
+          const publishedDate = timeAgo(v.snippet.publishedAt);
+          statusHtml = `<span class="text-[11px] text-gray-400 flex items-center gap-1.5"><i class="fa-solid fa-earth-americas text-emerald-400"></i> ${publishedDate}</span>`;
+        }
+
         item.innerHTML = `
-          <div class="relative w-full h-36 bg-black overflow-hidden flex-shrink-0">
-            <img src="${thumb}" class="w-full h-full object-cover">
-            <span class="absolute top-1.5 left-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded ${isShort ? 'bg-red-600 text-white' : 'bg-black/70 text-gray-200'}">
-              ${isShort ? '<i class="fa-solid fa-bolt"></i> SHORTS' : 'VIDEO'}
-            </span>
-          </div>
-          <div class="p-2.5 flex flex-col flex-1 justify-between space-y-2">
-            <h4 class="text-[11px] font-semibold text-white line-clamp-2 leading-tight">${title}</h4>
-            <div class="space-y-1">
-              <span class="text-[9px] text-gray-400 block"><i class="fa-regular fa-clock"></i> ${publishedDate}</span>
-              <div class="flex items-center justify-between text-[10px] text-gray-400 pt-1 border-t border-gray-700/60">
-                <span><i class="fa-solid fa-eye text-blue-400"></i> ${views}</span>
-                <span><i class="fa-solid fa-thumbs-up text-green-400"></i> ${likes}</span>
-                <span><i class="fa-solid fa-comment text-yellow-400"></i> ${comments}</span>
-              </div>
+          <div>
+            <!-- Thumbnail 16:9 utuh persis foto ke-2 -->
+            <div class="relative w-full aspect-video bg-black overflow-hidden">
+              <img src="${thumb}" class="w-full h-full object-cover">
+              <span class="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded shadow ${isShort ? 'bg-red-600 text-white' : 'bg-black/80 text-gray-200'}">
+                ${isShort ? '<i class="fa-solid fa-bolt"></i> SHORTS' : 'VIDEO'}
+              </span>
             </div>
+
+            <!-- Bagian Judul & Status -->
+            <div class="p-3 space-y-2">
+              <h4 class="text-xs font-bold text-white line-clamp-2 leading-snug">${title}</h4>
+              <div>${statusHtml}</div>
+            </div>
+          </div>
+
+          <!-- Footer Statistik & Link Eksternal Persis Foto ke-2 -->
+          <div class="px-3 py-2.5 border-t border-gray-800/80 flex items-center justify-between text-[11px] text-gray-400">
+            <div class="flex items-center gap-3">
+              <span class="flex items-center gap-1"><i class="fa-solid fa-chart-simple text-gray-400"></i> ${views}</span>
+              <span class="flex items-center gap-1"><i class="fa-regular fa-thumbs-up text-gray-400"></i> ${likes}</span>
+              <span class="flex items-center gap-1"><i class="fa-regular fa-comment text-gray-400"></i> ${comments}</span>
+            </div>
+            <a href="${videoUrl}" target="_blank" title="Buka di YouTube" class="text-red-500 hover:text-red-400 transition">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
           </div>
         `;
         container.appendChild(item);
