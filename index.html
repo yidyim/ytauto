@@ -48,7 +48,7 @@
         <div id="contentSettingGemini" class="space-y-3">
           <label class="block text-xs font-semibold text-gray-300">Gemini API Key:</label>
           <input type="password" id="cookieGeminiKey" placeholder="AIzaSy..." class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-xs text-white">
-          <p class="text-[11px] text-gray-400">Kunci utama untuk analisis video, SEO, dan pembuatan prompt gambar.</p>
+          <p class="text-[11px] text-gray-400">Kunci utama untuk analisis video penuh, SEO, dan pembuatan prompt gambar.</p>
           
           <div class="pt-2">
             <label class="block text-xs font-semibold text-gray-300 mb-1">Pilih Model Gemini:</label>
@@ -151,13 +151,31 @@
         </div>
       </div>
 
-      <!-- PREVIEW THUMBNAIL (Potrait & Hidden Default sebelum inspek) -->
+      <!-- Progress Bar Proses Inspek & Auto-Compress -->
+      <div id="inspectProgressContainer" class="hidden bg-gray-900/80 p-3.5 rounded-xl border border-blue-800/70 space-y-2 shadow-inner">
+        <div class="flex justify-between items-center text-xs">
+          <span id="inspectProgressText" class="text-blue-300 font-semibold flex items-center gap-1.5">
+            <i class="fa-solid fa-spinner fa-spin"></i> Mengompresi video...
+          </span>
+          <span id="inspectProgressPercent" class="text-blue-400 font-mono font-bold">0%</span>
+        </div>
+        <div class="w-full bg-gray-700 h-2.5 rounded-full overflow-hidden">
+          <div id="inspectProgressBar" class="bg-blue-500 h-full w-0 transition-all duration-300"></div>
+        </div>
+        <p id="compressInfoText" class="text-[10px] text-gray-400">Menghemat kuota internet sebelum dikirim ke Gemini...</p>
+      </div>
+
+      <button id="btnProcess" onclick="processVideoWithAI()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2 shadow">
+        <i class="fa-solid fa-brain"></i> Kompres & Analisis Full Video dengan Gemini AI
+      </button>
+
+      <!-- PREVIEW THUMBNAIL (Potrait 9:16 & Auto-Unhide saat selesai inspek) -->
       <div id="previewThumbnailWrapper" class="hidden bg-gray-900/60 p-3 sm:p-4 rounded-xl border border-gray-700 space-y-2 max-w-xs mx-auto">
         <div class="flex items-center justify-between">
           <label class="text-xs font-bold text-purple-400 flex items-center gap-1.5">
-            <i class="fa-solid fa-image"></i> Preview Thumbnail (Potrait):
+            <i class="fa-solid fa-image"></i> Preview Thumbnail (9:16):
           </label>
-          <span id="thumbSourceLabel" class="text-[10px] text-gray-400 font-medium">Belum ada</span>
+          <span id="thumbSourceLabel" class="text-[10px] text-gray-400 font-medium">Frame Video</span>
         </div>
 
         <div class="w-full aspect-[9/16] bg-black border-2 border-purple-500/40 rounded-xl overflow-hidden flex items-center justify-center relative shadow-xl">
@@ -169,14 +187,10 @@
         </div>
 
         <div id="snapshotSection" class="hidden pt-2 border-t border-gray-800 space-y-1.5">
-          <label class="block text-[11px] font-semibold text-gray-300">Pilih frame dari video:</label>
+          <label class="block text-[11px] font-semibold text-gray-300">Ganti frame dari video:</label>
           <div id="snapshotGrid" class="grid grid-cols-4 gap-1.5"></div>
         </div>
       </div>
-
-      <button id="btnProcess" onclick="processVideoWithAI()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2 shadow">
-        <i class="fa-solid fa-brain"></i> Analisis Video & Buat SEO & Prompt Thumbnail AI
-      </button>
 
       <!-- Hasil AI Metadata & Prompt Generator -->
       <div id="aiResultArea" class="hidden space-y-3 border-t border-gray-700 pt-3">
@@ -357,7 +371,7 @@
     let cachedMasterVideos = [];
     let activeStatFilter = 'total';
     let selectedThumbnailBlob = null;
-    let base64Snapshots = [];
+    let firstSnapshotDataUrl = null;
     let currentPage = 1;
     const itemsPerPage = 12;
     let currentZoomScale = 1;
@@ -623,14 +637,14 @@
       }
     }
 
-    function updateActiveThumbnailPreview(src, labelText) {
+    function updateActiveThumbnailPreview(src, labelText, forceShow = true) {
       const previewWrapper = document.getElementById('previewThumbnailWrapper');
       const previewImg = document.getElementById('activeThumbnailPreview');
       const placeholder = document.getElementById('noThumbPlaceholder');
       const label = document.getElementById('thumbSourceLabel');
 
       if (src) {
-        previewWrapper.classList.remove('hidden');
+        if (forceShow) previewWrapper.classList.remove('hidden');
         previewImg.src = src;
         previewImg.classList.remove('hidden');
         placeholder.classList.add('hidden');
@@ -655,12 +669,12 @@
       document.getElementById('aiThumbnailPrompt').value = '';
       document.getElementById('aiMarketplace').value = '';
       document.getElementById('aiResultArea').classList.add('hidden');
+      document.getElementById('inspectProgressContainer').classList.add('hidden');
       document.getElementById('snapshotSection').classList.add('hidden');
       document.getElementById('snapshotGrid').innerHTML = '';
       updateActiveThumbnailPreview(null);
       selectedThumbnailBlob = null;
-      base64Snapshots = [];
-      alert("Form inspek dan berkas berhasil dibersihkan!");
+      firstSnapshotDataUrl = null;
     }
 
     function openThumbnailModal(imgSrc) {
@@ -692,14 +706,15 @@
       const snapshotGrid = document.getElementById('snapshotGrid');
 
       updateActiveThumbnailPreview(null);
-      base64Snapshots = [];
+      firstSnapshotDataUrl = null;
 
       if (!fileInput.files[0]) return;
       const file = fileInput.files[0];
       document.getElementById('aiFileName').value = file.name;
 
+      // Siapkan 4 frame potrait secara senyap di latar belakang (tetap hidden sampai inspek selesai)
       snapshotSection.classList.remove('hidden');
-      snapshotGrid.innerHTML = '<div class="text-[10px] text-gray-400 col-span-4 text-center py-2"><i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan...</div>';
+      snapshotGrid.innerHTML = '';
 
       const video = document.createElement('video');
       video.preload = 'metadata';
@@ -710,7 +725,6 @@
       video.onloadedmetadata = async function() {
         const duration = video.duration;
         const timePoints = [duration * 0.1, duration * 0.35, duration * 0.6, duration * 0.85];
-        snapshotGrid.innerHTML = '';
 
         for (let i = 0; i < timePoints.length; i++) {
           video.currentTime = timePoints[i];
@@ -718,12 +732,17 @@
 
           const canvas = document.createElement('canvas');
           canvas.width = 720;
-          canvas.height = 1280; // Format potrait 9:16
+          canvas.height = 1280; // Potrait 9:16
           const ctx = canvas.getContext('2d');
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           
           const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-          base64Snapshots.push(dataUrl.split(',')[1]);
+          if (i === 0) {
+            firstSnapshotDataUrl = dataUrl;
+            const res = await fetch(dataUrl);
+            const blob = await res.blob();
+            selectedThumbnailBlob = new File([blob], `snapshot_1.jpg`, { type: 'image/jpeg' });
+          }
 
           const div = document.createElement('div');
           div.className = "relative group cursor-pointer border-2 border-transparent hover:border-purple-500 rounded overflow-hidden bg-black aspect-[9/16]";
@@ -736,7 +755,7 @@
               .then(res => res.blob())
               .then(blob => {
                 selectedThumbnailBlob = new File([blob], `snapshot_${i + 1}.jpg`, { type: 'image/jpeg' });
-                updateActiveThumbnailPreview(dataUrl, "Frame Video Potrait");
+                updateActiveThumbnailPreview(dataUrl, "Frame Video Potrait", true);
               });
           };
           snapshotGrid.appendChild(div);
@@ -752,7 +771,7 @@
         selectedThumbnailBlob = file;
         const reader = new FileReader();
         reader.onload = function(e) {
-          updateActiveThumbnailPreview(e.target.result, "Galeri");
+          updateActiveThumbnailPreview(e.target.result, "Galeri", true);
         };
         reader.readAsDataURL(file);
       }
@@ -779,6 +798,65 @@
       }
     }
 
+    function updateInspectProgress(percent, statusText, subText = '') {
+      document.getElementById('inspectProgressContainer').classList.remove('hidden');
+      document.getElementById('inspectProgressBar').style.width = `${percent}%`;
+      document.getElementById('inspectProgressPercent').textContent = `${percent}%`;
+      document.getElementById('inspectProgressText').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${statusText}`;
+      if (subText) document.getElementById('compressInfoText').textContent = subText;
+    }
+
+    // Fungsi Auto-Kompresi Video di Browser (Menghemat Kuota Sebelum Kirim ke Gemini)
+    async function compressVideoFile(file, onProgress) {
+      return new Promise((resolve) => {
+        const video = document.createElement('video');
+        video.src = URL.createObjectURL(file);
+        video.muted = true;
+        video.playsInline = true;
+
+        video.onloadedmetadata = () => {
+          // Skala resolusi ke maksimal 480p untuk hemat kuota AI
+          const scale = Math.min(1, 480 / Math.max(video.videoWidth, video.videoHeight));
+          const width = Math.round(video.videoWidth * scale);
+          const height = Math.round(video.videoHeight * scale);
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+
+          const stream = canvas.captureStream(15); // 15 FPS cukup untuk analisis penuh AI
+          const recorder = new MediaRecorder(stream, {
+            mimeType: 'video/webm;codecs=vp8',
+            videoBitsPerSecond: 350000 // 350 kbps (super ringan & hemat kuota)
+          });
+
+          const chunks = [];
+          recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+          recorder.onstop = () => {
+            const compressedBlob = new Blob(chunks, { type: 'video/webm' });
+            URL.revokeObjectURL(video.src);
+            resolve(compressedBlob);
+          };
+
+          recorder.start();
+          video.play();
+
+          const interval = setInterval(() => {
+            if (video.paused || video.ended) {
+              clearInterval(interval);
+              recorder.stop();
+              return;
+            }
+            ctx.drawImage(video, 0, 0, width, height);
+            const pct = Math.min(40, Math.round((video.currentTime / video.duration) * 40));
+            onProgress(pct);
+          }, 66);
+        };
+      });
+    }
+
+    // Upload Full Video ke Gemini File API & Analisis Penuh
     async function processVideoWithAI() {
       const apiKey = getCookie('yt_gemini_key');
       const selectedModel = getCookie('yt_gemini_model') || 'gemini-3.8-flash';
@@ -791,43 +869,102 @@
       }
       if (!fileInput.files[0]) return alert("Pilih berkas video terlebih dahulu!");
 
-      const fileName = fileInput.files[0].name;
+      const originalFile = fileInput.files[0];
       const btn = document.getElementById('btnProcess');
-
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menganalisis dengan (${selectedModel})...`;
-
-      let contentsParts = [];
-      if (base64Snapshots.length > 0) {
-        contentsParts.push({ inlineData: { mimeType: "image/jpeg", data: base64Snapshots[0] } });
-      }
-
-      contentsParts.push({ text: `Analisis video berdasarkan nama file "${fileName}" dan cuplikan visual di atas. Hasilkan output JSON murni (tanpa markdown):
-{
-  "newFileName": "nama_berkas_seo.mp4",
-  "title": "Judul menarik berstandar YouTube Pro max 100 karakter disertai 2 atau 3 tag/hashtag FYP beremotikon 🔥✨",
-  "description": "Deskripsi YouTube Pro yang sangat kaya dengan pernak-pernik emotikon aktif, sapaan penonton, timestamps 00:00 Pendahuluan, call to action subscribe, dan hashtag SEO populer 🚀👇",
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-  "marketplaceKeywords": "Kata kunci Shopee/Tokopedia",
-  "categoryId": "Nomor ID kategori YouTube (17 untuk Olahraga, 27 untuk Pendidikan, 26 untuk Cara & Gaya, 22 untuk Blog & Orang, 24 untuk Hiburan)",
-  "thumbnailPrompt": "Detailed English prompt for ChatGPT/DALL-E 3 to create a vibrant, high-contrast, professional YouTube thumbnail (potrait 9:16) with expressive human face, colorful neon glowing icons related to the video topic, bold clean text space, hyper-realistic, viral style."
-}` });
 
       try {
+        // Tahap 1: Auto-Compress Video (0% -> 40%)
+        const origSizeMB = (originalFile.size / (1024 * 1024)).toFixed(2);
+        updateInspectProgress(5, "Mengompresi video otomatis...", `Ukuran asli: ${origSizeMB} MB. Memperkecil resolusi agar hemat kuota...`);
+        
+        const compressedBlob = await compressVideoFile(originalFile, (pct) => {
+          updateInspectProgress(pct, "Mengompresi video otomatis...", `Mengompresi frame & bitrate (${pct * 2.5}%)...`);
+        });
+
+        const compSizeMB = (compressedBlob.size / (1024 * 1024)).toFixed(2);
+        updateInspectProgress(45, "Mengunggah full video ke Gemini AI...", `Kompresi berhasil! Hemat kuota: ${origSizeMB} MB → ${compSizeMB} MB`);
+
+        // Tahap 2: Upload ke Gemini File API (45% -> 75%)
+        const startUploadRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'X-Goog-Upload-Protocol': 'resumable',
+            'X-Goog-Upload-Command': 'start',
+            'X-Goog-Upload-Header-Content-Length': compressedBlob.size,
+            'X-Goog-Upload-Header-Content-Type': 'video/webm',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ file: { display_name: originalFile.name } })
+        });
+
+        const uploadUrl = startUploadRes.headers.get('X-Goog-Upload-URL');
+        if (!uploadUrl) throw new Error("Gagal memulai sesi upload ke Gemini File API.");
+
+        updateInspectProgress(60, "Mengirim data video ke server AI...", `Mengirim ${compSizeMB} MB ke Gemini...`);
+
+        const uploadRes = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Length': compressedBlob.size,
+            'X-Goog-Upload-Offset': '0',
+            'X-Goog-Upload-Command': 'upload, finalize'
+          },
+          body: compressedBlob
+        });
+
+        const fileInfo = await uploadRes.json();
+        if (!fileInfo.file || !fileInfo.file.uri) throw new Error("Gagal mendapatkan URI file dari Gemini.");
+
+        const fileUri = fileInfo.file.uri;
+        const fileNameApi = fileInfo.file.name;
+
+        // Tahap 3: Tunggu pemrosesan video di server Gemini hingga ACTIVE (75% -> 85%)
+        updateInspectProgress(75, "Memproses video di server Gemini...", "Menunggu server AI membaca keseluruhan video...");
+        let fileState = fileInfo.file.state;
+        while (fileState === 'PROCESSING') {
+          await new Promise(r => setTimeout(r, 2500));
+          const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileNameApi}?key=${apiKey}`);
+          const checkData = await checkRes.json();
+          fileState = checkData.state;
+          if (fileState === 'FAILED') throw new Error("Pemrosesan video gagal di server Gemini.");
+        }
+
+        // Tahap 4: Analisis Full Video & Generate Metadata SEO (85% -> 100%)
+        updateInspectProgress(90, `Menganalisis seluruh isi video (${selectedModel})...`, "Menyusun judul, deskripsi SEO, dan prompt thumbnail...");
+
+        const promptText = `Tonton dan analisis seluruh isi video ini secara mendalam dari awal sampai akhir. Hasilkan output JSON murni (tanpa markdown):
+{
+  "newFileName": "nama_berkas_seo_sesuai_isi_video.mp4",
+  "title": "Judul menarik berstandar YouTube Pro max 100 karakter sesuai isi video disertai 2 atau 3 tag/hashtag FYP beremotikon 🔥✨",
+  "description": "Deskripsi YouTube Pro yang sangat kaya dengan pernak-pernik emotikon aktif sesuai topik video, sapaan penonton, timestamps 00:00 Pendahuluan, call to action subscribe, dan hashtag SEO populer 🚀👇",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6"],
+  "marketplaceKeywords": "Kata kunci produk Shopee/Tokopedia yang relevan dengan isi video",
+  "categoryId": "Nomor ID kategori YouTube (17 untuk Olahraga, 27 untuk Pendidikan, 26 untuk Cara & Gaya, 22 untuk Blog & Orang, 24 untuk Hiburan)",
+  "thumbnailPrompt": "Detailed English prompt for ChatGPT/DALL-E 3 to create a vibrant, high-contrast, professional YouTube thumbnail (potrait 9:16) matching the exact topic of this video, with expressive human face, colorful neon glowing icons, bold clean text space, hyper-realistic, viral style."
+}`;
+
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: contentsParts }] })
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { fileData: { mimeType: 'video/webm', fileUri: fileUri } },
+                { text: promptText }
+              ]
+            }]
+          })
         });
 
         const result = await response.json();
-        if (!response.ok) throw new Error(result.error ? result.error.message : "Gagal terhubung ke Gemini API");
+        if (!response.ok) throw new Error(result.error ? result.error.message : "Gagal menganalisis video di Gemini API");
 
         const textResponse = result.candidates[0].content.parts[0].text;
         let cleanJson = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
         const data = JSON.parse(cleanJson);
 
-        document.getElementById('aiFileName').value = data.newFileName || fileName;
+        document.getElementById('aiFileName').value = data.newFileName || originalFile.name;
         document.getElementById('aiTitle').value = data.title || '';
         document.getElementById('aiDescription').value = data.description || '';
         document.getElementById('aiTags').value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '');
@@ -838,14 +975,21 @@
           document.getElementById('aiCategory').value = data.categoryId;
         }
 
+        // Selesai 100%: Auto-Unhide Preview Thumbnail 9:16 & Area Hasil AI
+        updateInspectProgress(100, "Analisis Full Video Selesai!", `Berhasil menghemat kuota (${origSizeMB} MB → ${compSizeMB} MB).`);
         document.getElementById('aiResultArea').classList.remove('hidden');
-        alert("Analisis SEO Selesai!");
+
+        if (firstSnapshotDataUrl) {
+          updateActiveThumbnailPreview(firstSnapshotDataUrl, "Frame Video (9:16)", true);
+        } else {
+          document.getElementById('previewThumbnailWrapper').classList.remove('hidden');
+        }
 
       } catch (err) {
         alert("Error Analisis AI: " + err.message);
+        document.getElementById('inspectProgressContainer').classList.add('hidden');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-brain"></i> Analisis Video & Buat SEO & Prompt Thumbnail AI';
       }
     }
 
@@ -927,7 +1071,6 @@
           document.getElementById('progressPercent').textContent = '100% (Selesai!)';
           alert(`Video Berhasil Diunggah! ID: ${videoId}`);
           
-          // Reset form dan arahkan ke Tab 2 (Koleksi Video) serta sync data
           clearInspectionForm();
           switchMainTab('tabDashboard');
           forceRefreshDashboard();
