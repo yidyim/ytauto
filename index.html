@@ -387,16 +387,23 @@
 
     <!-- TAB 3: KALENDER KONTEN (CONTENT CALENDAR) -->
     <div id="paneTabCalendar" class="hidden space-y-4 bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-700 shadow-lg max-w-4xl mx-auto">
-      <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-700 pb-3 gap-3">
         <div>
           <h2 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
             <i class="fa-solid fa-calendar-days text-yellow-400"></i> Kalender Jadwal Konten Terjadwal
           </h2>
           <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">Daftar agenda video yang dijadwalkan tayang di channel Anda</p>
         </div>
-        <button onclick="renderContentCalendar()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
-          <i class="fa-solid fa-rotate"></i> Muat Ulang
-        </button>
+        
+        <!-- Filter per Channel untuk Tab 3 -->
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <select id="calendarChannelFilter" onchange="renderContentCalendar()" class="bg-gray-700 text-xs rounded-lg p-2 border border-gray-600 text-white flex-1 sm:w-48">
+            <option value="all">Semua Channel</option>
+          </select>
+          <button onclick="renderContentCalendar()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-xs font-semibold transition">
+            <i class="fa-solid fa-rotate"></i>
+          </button>
+        </div>
       </div>
 
       <div id="calendarListContainer" class="space-y-2.5">
@@ -409,16 +416,23 @@
 
     <!-- TAB 4: ANALYTICS & PERFORMANCE TRACKER -->
     <div id="paneTabAnalytics" class="hidden space-y-4 bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-700 shadow-lg max-w-4xl mx-auto">
-      <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-700 pb-3 gap-3">
         <div>
           <h2 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
             <i class="fa-solid fa-chart-line text-emerald-400"></i> Analytics & Performance Tracker
           </h2>
           <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">Ringkasan performa interaksi dan statistik keseluruhan channel YouTube Anda</p>
         </div>
-        <button onclick="renderAnalyticsTracker()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
-          <i class="fa-solid fa-rotate"></i> Perbarui Data
-        </button>
+        
+        <!-- Filter per Channel untuk Tab 4 -->
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <select id="analyticsChannelFilter" onchange="renderAnalyticsTracker()" class="bg-gray-700 text-xs rounded-lg p-2 border border-gray-600 text-white flex-1 sm:w-48">
+            <option value="all">Semua Channel</option>
+          </select>
+          <button onclick="renderAnalyticsTracker()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-xs font-semibold transition">
+            <i class="fa-solid fa-rotate"></i>
+          </button>
+        </div>
       </div>
 
       <!-- Ringkasan Statistik Utama -->
@@ -474,7 +488,6 @@
       const paneCalendar = document.getElementById('paneTabCalendar');
       const paneAnalytics = document.getElementById('paneTabAnalytics');
 
-      // Reset semua tombol tab ke abu-abu
       [btnUpload, btnDashboard, btnCalendar, btnAnalytics].forEach(b => {
         b.className = "py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-1 bg-gray-700 text-gray-300 hover:bg-gray-600";
       });
@@ -684,9 +697,14 @@
       const accounts = JSON.parse(localStorage.getItem('yt_multi_accounts') || '[]');
       const uploadSelect = document.getElementById('uploadChannelSelect');
       const filterSelect = document.getElementById('dashboardChannelFilter');
+      const calFilterSelect = document.getElementById('calendarChannelFilter');
+      const anaFilterSelect = document.getElementById('analyticsChannelFilter');
 
+      const defaultOpt = '<option value="all">Semua Channel</option>';
       uploadSelect.innerHTML = '';
-      filterSelect.innerHTML = '<option value="all">Semua Channel</option>';
+      filterSelect.innerHTML = defaultOpt;
+      if (calFilterSelect) calFilterSelect.innerHTML = defaultOpt;
+      if (anaFilterSelect) anaFilterSelect.innerHTML = defaultOpt;
 
       if (accounts.length === 0) {
         uploadSelect.innerHTML = '<option value="">-- Belum Ada Channel Terhubung --</option>';
@@ -703,6 +721,20 @@
         opt2.value = acc.id;
         opt2.textContent = acc.title;
         filterSelect.appendChild(opt2);
+
+        if (calFilterSelect) {
+          const opt3 = document.createElement('option');
+          opt3.value = acc.id;
+          opt3.textContent = acc.title;
+          calFilterSelect.appendChild(opt3);
+        }
+
+        if (anaFilterSelect) {
+          const opt4 = document.createElement('option');
+          opt4.value = acc.id;
+          opt4.textContent = acc.title;
+          anaFilterSelect.appendChild(opt4);
+        }
       });
       document.getElementById('activeChannelLabel').textContent = `Channel: ${accounts.length} Terhubung`;
     }
@@ -919,7 +951,6 @@
       if (subText) document.getElementById('compressInfoText').textContent = subText;
     }
 
-    // Fungsi Auto-Kompresi & Watermark di Browser
     async function compressAndWatermarkVideo(file, watermarkText, onProgress) {
       return new Promise((resolve) => {
         const video = document.createElement('video');
@@ -962,7 +993,6 @@
             }
             ctx.drawImage(video, 0, 0, width, height);
 
-            // Tambahkan watermark jika diisi
             if (watermarkText) {
               ctx.save();
               ctx.font = 'bold 16px sans-serif';
@@ -1284,6 +1314,8 @@
       localStorage.setItem('yt_video_cache', JSON.stringify(allVideos));
       currentPage = 1;
       renderDashboardFromCache();
+      renderContentCalendar();
+      renderAnalyticsTracker();
     }
 
     function filterByStatCard(statType) {
@@ -1405,24 +1437,30 @@
       renderPagination(totalPages);
     }
 
-    // Render Tab 3: Kalender Konten (Content Calendar)
+    // Render Tab 3 dengan Filter per Channel
     function renderContentCalendar() {
       const calContainer = document.getElementById('calendarListContainer');
+      const channelFilter = document.getElementById('calendarChannelFilter').value;
+
       if (!cachedMasterVideos || cachedMasterVideos.length === 0) {
         calContainer.innerHTML = `<div class="text-center text-gray-500 text-xs py-16">Belum ada data video. Lakukan sinkronisasi di Tab Koleksi Video.</div>`;
         return;
       }
 
-      const scheduledVideos = cachedMasterVideos.filter(v => v.status?.publishAt || v.status?.privacyStatus === 'private');
-      if (scheduledVideos.length === 0) {
-        calContainer.innerHTML = `<div class="text-center text-gray-500 text-xs py-16"><i class="fa-regular fa-calendar-check text-3xl mb-2 text-yellow-500"></i><br>Tidak ada agenda video terjadwal saat ini.</div>`;
+      let filtered = cachedMasterVideos.filter(v => v.status?.publishAt || v.status?.privacyStatus === 'private');
+      if (channelFilter !== 'all') {
+        filtered = filtered.filter(v => v.channelIdRef === channelFilter);
+      }
+
+      if (filtered.length === 0) {
+        calContainer.innerHTML = `<div class="text-center text-gray-500 text-xs py-16"><i class="fa-regular fa-calendar-check text-3xl mb-2 text-yellow-500"></i><br>Tidak ada agenda video terjadwal untuk filter ini.</div>`;
         return;
       }
 
-      scheduledVideos.sort((a, b) => new Date(a.status?.publishAt || 0) - new Date(b.status?.publishAt || 0));
+      filtered.sort((a, b) => new Date(a.status?.publishAt || 0) - new Date(b.status?.publishAt || 0));
 
       calContainer.innerHTML = '';
-      scheduledVideos.forEach(v => {
+      filtered.forEach(v => {
         const thumb = v.snippet.thumbnails.medium ? v.snippet.thumbnails.medium.url : '';
         const title = v.snippet.title;
         const channelName = v.channelTitleRef || 'Channel';
@@ -1448,9 +1486,11 @@
       });
     }
 
-    // Render Tab 4: Analytics & Performance Tracker Sederhana
+    // Render Tab 4 dengan Filter per Channel
     function renderAnalyticsTracker() {
       const topContainer = document.getElementById('topVideosContainer');
+      const channelFilter = document.getElementById('analyticsChannelFilter').value;
+
       if (!cachedMasterVideos || cachedMasterVideos.length === 0) {
         document.getElementById('anaTotalViews').textContent = '0';
         document.getElementById('anaTotalLikes').textContent = '0';
@@ -1460,11 +1500,16 @@
         return;
       }
 
+      let filtered = [...cachedMasterVideos];
+      if (channelFilter !== 'all') {
+        filtered = filtered.filter(v => v.channelIdRef === channelFilter);
+      }
+
       let totalViews = 0;
       let totalLikes = 0;
       let totalComments = 0;
 
-      cachedMasterVideos.forEach(v => {
+      filtered.forEach(v => {
         totalViews += Number(v.statistics?.viewCount || 0);
         totalLikes += Number(v.statistics?.likeCount || 0);
         totalComments += Number(v.statistics?.commentCount || 0);
@@ -1477,9 +1522,13 @@
       document.getElementById('anaTotalComments').textContent = totalComments.toLocaleString('id-ID');
       document.getElementById('anaEngagement').textContent = `${avgEngagement}%`;
 
-      // Urutkan video berdasarkan views tertinggi untuk Top Performer
-      let sortedByViews = [...cachedMasterVideos].sort((a, b) => Number(b.statistics?.viewCount || 0) - Number(a.statistics?.viewCount || 0));
+      let sortedByViews = filtered.sort((a, b) => Number(b.statistics?.viewCount || 0) - Number(a.statistics?.viewCount || 0));
       let topFive = sortedByViews.slice(0, 5);
+
+      if (topFive.length === 0) {
+        topContainer.innerHTML = `<div class="text-center text-gray-500 text-xs py-8">Tidak ada data video untuk channel ini.</div>`;
+        return;
+      }
 
       topContainer.innerHTML = '';
       topFive.forEach((v, index) => {
