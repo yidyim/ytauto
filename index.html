@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-900 text-gray-100 font-sans min-h-screen">
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen pb-12">
   
   <!-- Header Navbar -->
   <header class="bg-gray-800 border-b border-gray-700 py-3 px-4 sm:px-6 flex justify-between items-center shadow-md">
@@ -24,16 +24,28 @@
     </div>
   </header>
 
+  <!-- Navigasi 2 Tab -->
+  <div class="container mx-auto px-3 sm:px-6 pt-4">
+    <div class="bg-gray-800 border border-gray-700 p-1.5 rounded-2xl flex gap-2 shadow-lg max-w-md mx-auto">
+      <button onclick="switchMainTab('tabUpload')" id="btnTabUpload" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-blue-600 text-white shadow">
+        <i class="fa-solid fa-cloud-arrow-up"></i> Tab 1: Upload & Inspek
+      </button>
+      <button onclick="switchMainTab('tabDashboard')" id="btnTabDashboard" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-gray-700 text-gray-300 hover:bg-gray-600">
+        <i class="fa-solid fa-film"></i> Tab 2: Koleksi Video
+      </button>
+    </div>
+  </div>
+
   <!-- Modal Pengaturan -->
   <div id="settingsModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
     <div class="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
       <div class="flex border-b border-gray-700 bg-gray-900/50">
-        <button onclick="switchSettingTab('tabGemini')" id="btnTabGemini" class="flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 transition">1. Gemini API</button>
-        <button onclick="switchSettingTab('tabGoogle')" id="btnTabGoogle" class="flex-1 py-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition">2. Google OAuth</button>
+        <button onclick="switchSettingTab('tabGemini')" id="btnSettingGemini" class="flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 transition">1. Gemini API</button>
+        <button onclick="switchSettingTab('tabGoogle')" id="btnSettingGoogle" class="flex-1 py-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition">2. Google OAuth</button>
       </div>
 
       <div class="p-5 sm:p-6 space-y-4">
-        <div id="contentTabGemini" class="space-y-3">
+        <div id="contentSettingGemini" class="space-y-3">
           <label class="block text-xs font-semibold text-gray-300">Gemini API Key:</label>
           <input type="password" id="cookieGeminiKey" placeholder="AIzaSy..." class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-xs text-white">
           <p class="text-[11px] text-gray-400">Kunci utama untuk analisis video, SEO, dan pembuatan prompt gambar.</p>
@@ -49,7 +61,7 @@
           </div>
         </div>
 
-        <div id="contentTabGoogle" class="space-y-3 hidden">
+        <div id="contentSettingGoogle" class="space-y-3 hidden">
           <label class="block text-xs font-semibold text-gray-300">Google Client ID (OAuth 2.0):</label>
           <input type="text" id="cookieClientId" placeholder="xxxxxx.apps.googleusercontent.com" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-xs text-white">
         </div>
@@ -94,17 +106,17 @@
     </div>
   </div>
 
-  <!-- Konten Utama -->
-  <div class="container mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+  <!-- Konten Tab 1 & Tab 2 -->
+  <div class="container mx-auto p-3 sm:p-6">
     
-    <!-- Kiri: Upload & AI Automation -->
-    <div class="lg:col-span-5 bg-gray-800 rounded-2xl p-4 sm:p-5 border border-gray-700 space-y-4 shadow-lg">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-700 pb-2 gap-2">
+    <!-- TAB 1: UPLOAD & AI AUTOMATION -->
+    <div id="paneTabUpload" class="space-y-4 max-w-3xl mx-auto bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-700 shadow-xl">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-700 pb-3 gap-2">
         <h2 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
           <i class="fa-solid fa-cloud-arrow-up"></i> Upload & AI Otomasi Video
         </h2>
         
-        <!-- Status Model Gemini (Dropdown Interaktif versi 3 ke atas) -->
+        <!-- Status Model Gemini (Dropdown Interaktif v3+) -->
         <div class="relative">
           <button onclick="toggleModelDropdown()" id="activeModelBadge" class="bg-blue-900/70 hover:bg-blue-800 text-blue-200 text-[11px] px-3 py-1 rounded-full font-mono font-medium border border-blue-600/60 flex items-center gap-1.5 transition shadow">
             <i class="fa-solid fa-robot"></i> <span id="currentModelText">Model: Memuat...</span> <i class="fa-solid fa-chevron-down text-[9px]"></i>
@@ -139,26 +151,26 @@
         </div>
       </div>
 
-      <!-- PREVIEW THUMBNAIL -->
-      <div class="bg-gray-900/60 p-3 sm:p-4 rounded-xl border border-gray-700 space-y-2">
+      <!-- PREVIEW THUMBNAIL (Potrait & Hidden Default sebelum inspek) -->
+      <div id="previewThumbnailWrapper" class="hidden bg-gray-900/60 p-3 sm:p-4 rounded-xl border border-gray-700 space-y-2 max-w-xs mx-auto">
         <div class="flex items-center justify-between">
           <label class="text-xs font-bold text-purple-400 flex items-center gap-1.5">
-            <i class="fa-solid fa-image"></i> Preview Thumbnail (16:9):
+            <i class="fa-solid fa-image"></i> Preview Thumbnail (Potrait):
           </label>
-          <span id="thumbSourceLabel" class="text-[10px] sm:text-[11px] text-gray-400 font-medium">Belum ada</span>
+          <span id="thumbSourceLabel" class="text-[10px] text-gray-400 font-medium">Belum ada</span>
         </div>
 
-        <div class="w-full aspect-video bg-black border-2 border-purple-500/40 rounded-xl overflow-hidden flex items-center justify-center relative shadow-xl">
-          <img id="activeThumbnailPreview" src="" class="w-full h-full object-contain hidden cursor-zoom-in" onclick="openThumbnailModal(this.src)">
+        <div class="w-full aspect-[9/16] bg-black border-2 border-purple-500/40 rounded-xl overflow-hidden flex items-center justify-center relative shadow-xl">
+          <img id="activeThumbnailPreview" src="" class="w-full h-full object-cover hidden cursor-zoom-in" onclick="openThumbnailModal(this.src)">
           <div id="noThumbPlaceholder" class="text-center text-gray-500 text-xs p-4">
             <i class="fa-regular fa-image text-3xl mb-1 text-gray-600"></i><br>
-            Belum ada thumbnail dipilih.
+            Belum ada thumbnail.
           </div>
         </div>
 
         <div id="snapshotSection" class="hidden pt-2 border-t border-gray-800 space-y-1.5">
-          <label class="block text-[11px] font-semibold text-gray-300">Atau pilih dari frame video:</label>
-          <div id="snapshotGrid" class="grid grid-cols-4 gap-1.5 sm:gap-2"></div>
+          <label class="block text-[11px] font-semibold text-gray-300">Pilih frame dari video:</label>
+          <div id="snapshotGrid" class="grid grid-cols-4 gap-1.5"></div>
         </div>
       </div>
 
@@ -258,8 +270,8 @@
       </div>
     </div>
 
-    <!-- Kanan: YouTube Studio Mobile Dashboard -->
-    <div class="lg:col-span-7 bg-gray-800 rounded-2xl p-4 sm:p-5 border border-gray-700 flex flex-col shadow-lg space-y-4">
+    <!-- TAB 2: YOUTUBE STUDIO MOBILE DASHBOARD -->
+    <div id="paneTabDashboard" class="hidden space-y-4 bg-gray-800 rounded-2xl p-4 sm:p-5 border border-gray-700 shadow-lg">
       
       <!-- Header Dashboard -->
       <div class="bg-gray-900/80 border border-gray-700/80 p-3.5 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -274,7 +286,7 @@
         </button>
       </div>
 
-      <!-- Card Count Video (Klik card untuk memfilter langsung) -->
+      <!-- Card Count Video (Klik untuk memfilter) -->
       <div class="grid grid-cols-4 gap-2 text-center">
         <div onclick="filterByStatCard('total')" class="bg-gray-900/60 hover:bg-gray-700/60 border border-gray-700/60 p-2 rounded-lg cursor-pointer transition shadow">
           <p class="text-[9px] uppercase tracking-wider text-gray-400 font-semibold">Total Video</p>
@@ -294,7 +306,7 @@
         </div>
       </div>
 
-      <!-- Filter Bar Dashboard (Tanpa Filter Produk & Tanpa Tombol Terjadwal Saja) -->
+      <!-- Filter Bar Dashboard -->
       <div class="space-y-2 bg-gray-900/40 p-3 rounded-xl border border-gray-700/60">
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <div>
@@ -334,7 +346,7 @@
         </div>
       </div>
 
-      <!-- Pagination (Page 1, 2, 3, 4 dst) -->
+      <!-- Pagination -->
       <div id="paginationContainer" class="flex justify-center items-center gap-1.5 pt-2 border-t border-gray-800"></div>
 
     </div>
@@ -343,12 +355,31 @@
 
   <script>
     let cachedMasterVideos = [];
-    let activeStatFilter = 'total'; // 'total', 'shorts', 'long', 'scheduled'
+    let activeStatFilter = 'total';
     let selectedThumbnailBlob = null;
     let base64Snapshots = [];
     let currentPage = 1;
     const itemsPerPage = 12;
     let currentZoomScale = 1;
+
+    function switchMainTab(tabId) {
+      const btnUpload = document.getElementById('btnTabUpload');
+      const btnDashboard = document.getElementById('btnTabDashboard');
+      const paneUpload = document.getElementById('paneTabUpload');
+      const paneDashboard = document.getElementById('paneTabDashboard');
+
+      if (tabId === 'tabUpload') {
+        btnUpload.className = "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-blue-600 text-white shadow";
+        btnDashboard.className = "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-gray-700 text-gray-300 hover:bg-gray-600";
+        paneUpload.classList.remove('hidden');
+        paneDashboard.classList.add('hidden');
+      } else {
+        btnDashboard.className = "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-blue-600 text-white shadow";
+        btnUpload.className = "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-gray-700 text-gray-300 hover:bg-gray-600";
+        paneDashboard.classList.remove('hidden');
+        paneUpload.classList.add('hidden');
+      }
+    }
 
     function setCookie(name, value, days = 60) {
       const d = new Date();
@@ -451,10 +482,10 @@
     }
 
     function switchSettingTab(tabName) {
-      const btnGemini = document.getElementById('btnTabGemini');
-      const btnGoogle = document.getElementById('btnTabGoogle');
-      const contentGemini = document.getElementById('contentTabGemini');
-      const contentGoogle = document.getElementById('contentTabGoogle');
+      const btnGemini = document.getElementById('btnSettingGemini');
+      const btnGoogle = document.getElementById('btnSettingGoogle');
+      const contentGemini = document.getElementById('contentSettingGemini');
+      const contentGoogle = document.getElementById('contentSettingGoogle');
 
       if (tabName === 'tabGemini') {
         btnGemini.className = "flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 transition";
@@ -593,16 +624,19 @@
     }
 
     function updateActiveThumbnailPreview(src, labelText) {
+      const previewWrapper = document.getElementById('previewThumbnailWrapper');
       const previewImg = document.getElementById('activeThumbnailPreview');
       const placeholder = document.getElementById('noThumbPlaceholder');
       const label = document.getElementById('thumbSourceLabel');
 
       if (src) {
+        previewWrapper.classList.remove('hidden');
         previewImg.src = src;
         previewImg.classList.remove('hidden');
         placeholder.classList.add('hidden');
         label.textContent = `Sumber: ${labelText}`;
       } else {
+        previewWrapper.classList.add('hidden');
         previewImg.src = "";
         previewImg.classList.add('hidden');
         placeholder.classList.remove('hidden');
@@ -611,7 +645,6 @@
       }
     }
 
-    // Tombol Clear untuk membersihkan form inspek, video, dan thumbnail
     function clearInspectionForm() {
       document.getElementById('videoFileInput').value = '';
       document.getElementById('thumbFileInput').value = '';
@@ -630,7 +663,6 @@
       alert("Form inspek dan berkas berhasil dibersihkan!");
     }
 
-    // Modal Zoom Thumbnail Aktual
     function openThumbnailModal(imgSrc) {
       const modal = document.getElementById('thumbnailZoomModal');
       const zoomedImg = document.getElementById('zoomedThumbnailImg');
@@ -685,8 +717,8 @@
           await new Promise(r => { video.onseeked = r; });
 
           const canvas = document.createElement('canvas');
-          canvas.width = 1280;
-          canvas.height = 720;
+          canvas.width = 720;
+          canvas.height = 1280; // Format potrait 9:16
           const ctx = canvas.getContext('2d');
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           
@@ -694,7 +726,7 @@
           base64Snapshots.push(dataUrl.split(',')[1]);
 
           const div = document.createElement('div');
-          div.className = "relative group cursor-pointer border-2 border-transparent hover:border-purple-500 rounded overflow-hidden bg-black aspect-video";
+          div.className = "relative group cursor-pointer border-2 border-transparent hover:border-purple-500 rounded overflow-hidden bg-black aspect-[9/16]";
           div.innerHTML = `
             <img src="${dataUrl}" class="w-full h-full object-cover">
             <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[9px] text-white font-semibold">Pakai</div>
@@ -704,7 +736,7 @@
               .then(res => res.blob())
               .then(blob => {
                 selectedThumbnailBlob = new File([blob], `snapshot_${i + 1}.jpg`, { type: 'image/jpeg' });
-                updateActiveThumbnailPreview(dataUrl, "Frame Video Asli");
+                updateActiveThumbnailPreview(dataUrl, "Frame Video Potrait");
               });
           };
           snapshotGrid.appendChild(div);
@@ -770,7 +802,6 @@
         contentsParts.push({ inlineData: { mimeType: "image/jpeg", data: base64Snapshots[0] } });
       }
 
-      // Prompt disesuaikan dengan permintaan 5 & 6 (SEO YouTube Pro, emotikon, tag 2-3 buah di judul max 100 char)
       contentsParts.push({ text: `Analisis video berdasarkan nama file "${fileName}" dan cuplikan visual di atas. Hasilkan output JSON murni (tanpa markdown):
 {
   "newFileName": "nama_berkas_seo.mp4",
@@ -779,7 +810,7 @@
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
   "marketplaceKeywords": "Kata kunci Shopee/Tokopedia",
   "categoryId": "Nomor ID kategori YouTube (17 untuk Olahraga, 27 untuk Pendidikan, 26 untuk Cara & Gaya, 22 untuk Blog & Orang, 24 untuk Hiburan)",
-  "thumbnailPrompt": "Detailed English prompt for ChatGPT/DALL-E 3 to create a vibrant, high-contrast, professional YouTube thumbnail (16:9 landscape) with expressive human face, colorful neon glowing icons related to the video topic, bold clean text space, hyper-realistic, viral style."
+  "thumbnailPrompt": "Detailed English prompt for ChatGPT/DALL-E 3 to create a vibrant, high-contrast, professional YouTube thumbnail (potrait 9:16) with expressive human face, colorful neon glowing icons related to the video topic, bold clean text space, hyper-realistic, viral style."
 }` });
 
       try {
@@ -895,6 +926,10 @@
           document.getElementById('progressBar').style.width = '100%';
           document.getElementById('progressPercent').textContent = '100% (Selesai!)';
           alert(`Video Berhasil Diunggah! ID: ${videoId}`);
+          
+          // Reset form dan arahkan ke Tab 2 (Koleksi Video) serta sync data
+          clearInspectionForm();
+          switchMainTab('tabDashboard');
           forceRefreshDashboard();
         } else {
           alert("Upload Gagal: " + (result.error ? result.error.message : 'Unknown error'));
@@ -932,7 +967,7 @@
         return;
       }
 
-      container.innerHTML = '<div class="col-span-full text-center text-gray-400 text-xs py-16"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br>Memuat semua video YouTube (Reguler, Shorts, Terjadwal)...</div>';
+      container.innerHTML = '<div class="col-span-full text-center text-gray-400 text-xs py-16"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br>Memuat semua video YouTube...</div>';
 
       let allVideos = [];
       for (let acc of accounts) {
@@ -986,7 +1021,6 @@
       renderDashboardFromCache();
     }
 
-    // Fungsi klik card statistik untuk memfilter
     function filterByStatCard(statType) {
       activeStatFilter = statType;
       currentPage = 1;
@@ -1006,23 +1040,21 @@
         return;
       }
 
-      // Hitung statistik global berdasarkan channel yang dipilih (untuk badge statistik akurat)
       let globalFiltered = [...cachedMasterVideos];
       if (channelFilter !== 'all') {
         globalFiltered = globalFiltered.filter(v => v.channelIdRef === channelFilter);
       }
       const statTotalAll = globalFiltered.length;
-      const statShortsAll = globalFiltered.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") <= 60).length;
+      const statShortsAll = globalFiltered.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") <= 180).length;
       const statLongAll = statTotalAll - statShortsAll;
       const statScheduledAll = globalFiltered.filter(v => v.status?.publishAt || v.status?.privacyStatus === 'private').length;
       updateStats(statTotalAll, statShortsAll, statLongAll, statScheduledAll);
 
-      // Filter utama berdasarkan card statistik yang aktif
       let filtered = [...globalFiltered];
       if (activeStatFilter === 'shorts') {
-        filtered = filtered.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") <= 60);
+        filtered = filtered.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") <= 180);
       } else if (activeStatFilter === 'long') {
-        filtered = filtered.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") > 60);
+        filtered = filtered.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") > 180);
       } else if (activeStatFilter === 'scheduled') {
         filtered = filtered.filter(v => v.status?.publishAt || v.status?.privacyStatus === 'private');
       }
@@ -1052,13 +1084,12 @@
         const title = v.snippet.title;
         const channelName = v.channelTitleRef || 'Channel';
         const durationSec = parseDurationInSeconds(v.contentDetails?.duration || "PT0S");
-        const isShort = durationSec <= 60;
+        const isShort = durationSec <= 180;
         const views = Number(v.statistics?.viewCount || 0).toLocaleString('id-ID');
         const likes = Number(v.statistics?.likeCount || 0).toLocaleString('id-ID');
         const comments = Number(v.statistics?.commentCount || 0).toLocaleString('id-ID');
         const videoId = v.id;
 
-        // Tanpa kata "Dijadwalkan", pertahankan ikon jam & warna kuning, serta nama channel kecil di bawah dengan background hitam semi-transparan
         let statusHtml = '';
         if (v.status?.publishAt) {
           const schedDate = new Date(v.status.publishAt);
@@ -1079,7 +1110,6 @@
 
         item.innerHTML = `
           <div>
-            <!-- Klik foto thumbnail untuk membuka Modal Zoom Aktual -->
             <div class="relative w-full aspect-video bg-black overflow-hidden cursor-zoom-in group" onclick="openThumbnailModal('${thumb}')">
               <img src="${thumb}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
               <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
@@ -1090,14 +1120,12 @@
               </span>
             </div>
 
-            <!-- Judul video berfungsi sebagai hyperlink untuk memutar video -->
             <div class="p-3 space-y-2">
               <h4 class="text-xs font-bold text-white line-clamp-2 leading-snug cursor-pointer hover:text-blue-400 transition" onclick="openVideoModal('${videoId}', '${escapeHtml(title)}', '${views}', '${likes}', '${comments}')">${title}</h4>
               <div>${statusHtml}</div>
             </div>
           </div>
 
-          <!-- Footer Statistik -->
           <div class="px-3 py-2.5 border-t border-gray-800/80 flex items-center justify-between text-[11px] text-gray-400">
             <div class="flex items-center gap-3">
               <span class="flex items-center gap-1"><i class="fa-solid fa-chart-simple text-gray-400"></i> ${views}</span>
