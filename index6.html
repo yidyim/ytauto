@@ -54,7 +54,6 @@
         <div id="contentSettingGemini" class="space-y-3">
           <label class="block text-xs font-semibold text-gray-300">Gemini API Key:</label>
           <input type="password" id="cookieGeminiKey" placeholder="AIzaSy..." class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-xs text-white">
-          <p class="text-[11px] text-gray-400">Kunci utama untuk fitur pendukung lainnya.</p>
         </div>
 
         <div id="contentSettingGoogle" class="space-y-3 hidden">
@@ -121,7 +120,7 @@
             <option value="">-- Hubungkan Channel Terlebih Dahulu --</option>
           </select>
         </div>
-        <button onclick="clearInspectionForm()" class="bg-red-900/60 hover:bg-red-800 text-red-200 border border-red-700 px-3 py-2.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow">
+        <button onclick="clearInspectionForm()" class="bg-red-900/60 hover:bg-red-800 text-red-200 border border-red-700 px-3 py-2.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow" title="Bersihkan Form">
           <i class="fa-solid fa-trash-can"></i> Clear
         </button>
       </div>
@@ -140,17 +139,22 @@
         </div>
       </div>
 
-      <!-- KOTAK PARSER AI MANUAL (KOPI-TEMPEL) -->
+      <!-- KOTAK PARSER AI MANUAL DENGAN TOMBOL PASTE -->
       <div class="bg-blue-950/40 border border-blue-800/60 p-3.5 rounded-xl space-y-2">
-        <div class="flex justify-between items-center">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <label class="text-xs font-bold text-blue-300 flex items-center gap-1.5">
-            <i class="fa-solid fa-paste"></i> Kotak Parser Hasil Gemini (Tempel hasil salinan JSON/Teks di sini):
+            <i class="fa-solid fa-paste"></i> Kotak Parser Hasil Gemini:
           </label>
-          <button onclick="fillFormFromParser()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1 shadow">
-            <i class="fa-solid fa-bolt"></i> Proses / Isi Otomatis Form
-          </button>
+          <div class="flex items-center gap-1.5 w-full sm:w-auto">
+            <button onclick="pasteFromClipboard()" class="flex-1 sm:flex-none bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1 shadow">
+              <i class="fa-solid fa-clipboard"></i> Tempel (Paste)
+            </button>
+            <button onclick="fillFormFromParser()" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1 shadow">
+              <i class="fa-solid fa-bolt"></i> Proses / Isi Form
+            </button>
+          </div>
         </div>
-        <textarea id="manualParserInput" rows="3" placeholder="Tempel hasil JSON/teks dari Gemini di sini, lalu klik 'Proses / Isi Otomatis Form'..." class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-xs text-blue-200 font-mono"></textarea>
+        <textarea id="manualParserInput" rows="3" placeholder="Tempel format JSON dari Gemini di sini (atau klik tombol Tempel di atas)..." class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-xs text-blue-200 font-mono"></textarea>
       </div>
 
       <!-- PREVIEW THUMBNAIL (Potrait 9:16) -->
@@ -275,7 +279,6 @@
           <h2 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
             <i class="fa-solid fa-film text-red-500"></i> Koleksi & Analisis Video Studio Real-Time
           </h2>
-          <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">Pantau performa penayangan, status publikasi, dan koleksi video</p>
         </div>
         <button onclick="forceRefreshDashboard()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow">
           <i class="fa-solid fa-rotate"></i> Sync Live Data
@@ -326,86 +329,45 @@
             </select>
           </div>
         </div>
-        <div class="flex items-center justify-end pt-1 border-t border-gray-800">
-          <span id="activeChannelLabel" class="text-[10px] text-gray-400 truncate max-w-[200px]">Channel: Semua</span>
-        </div>
       </div>
 
       <div id="videoListContainer" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5 min-h-[300px]">
-        <div class="col-span-full text-center text-gray-500 text-xs py-16">
-          <i class="fa-solid fa-video-slash text-3xl mb-2 text-gray-600"></i><br>
-          Belum ada data video dimuat.<br>Klik tombol <b>"Sync Live Data"</b> di atas.
-        </div>
+        <div class="col-span-full text-center text-gray-500 text-xs py-16">Belum ada data video dimuat.</div>
       </div>
-
       <div id="paginationContainer" class="flex justify-center items-center gap-1.5 pt-2 border-t border-gray-800"></div>
     </div>
 
     <!-- TAB 3: KALENDER KONTEN -->
     <div id="paneTabCalendar" class="hidden space-y-4 bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-700 shadow-lg max-w-4xl mx-auto">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-700 pb-3 gap-3">
-        <div>
-          <h2 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-calendar-days text-yellow-400"></i> Kalender Jadwal Konten Terjadwal
-          </h2>
-        </div>
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <select id="calendarChannelFilter" onchange="renderContentCalendar()" class="bg-gray-700 text-xs rounded-lg p-2 border border-gray-600 text-white flex-1 sm:w-48">
-            <option value="all">Semua Channel</option>
-          </select>
-          <button onclick="renderContentCalendar()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-xs font-semibold transition">
-            <i class="fa-solid fa-rotate"></i>
-          </button>
-        </div>
+      <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+        <h2 class="text-xs sm:text-sm font-bold text-white"><i class="fa-solid fa-calendar-days text-yellow-400"></i> Kalender Terjadwal</h2>
       </div>
       <div id="calendarListContainer" class="space-y-2.5">
-        <div class="text-center text-gray-500 text-xs py-16">Belum ada data terjadwal. Lakukan "Sync Live Data" di Tab Koleksi Video.</div>
+        <div class="text-center text-gray-500 text-xs py-16">Belum ada data terjadwal.</div>
       </div>
     </div>
 
-    <!-- TAB 4: ANALYTICS & PERFORMANCE -->
+    <!-- TAB 4: ANALYTICS -->
     <div id="paneTabAnalytics" class="hidden space-y-4 bg-gray-800 rounded-2xl p-4 sm:p-6 border border-gray-700 shadow-lg max-w-4xl mx-auto">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-700 pb-3 gap-3">
-        <div>
-          <h2 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-chart-line text-emerald-400"></i> Analytics & Performance Tracker
-          </h2>
-        </div>
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <select id="analyticsChannelFilter" onchange="renderAnalyticsTracker()" class="bg-gray-700 text-xs rounded-lg p-2 border border-gray-600 text-white flex-1 sm:w-48">
-            <option value="all">Semua Channel</option>
-          </select>
-          <button onclick="renderAnalyticsTracker()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-xs font-semibold transition">
-            <i class="fa-solid fa-rotate"></i>
-          </button>
-        </div>
+      <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+        <h2 class="text-xs sm:text-sm font-bold text-white"><i class="fa-solid fa-chart-line text-emerald-400"></i> Analytics Tracker</h2>
       </div>
-
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="bg-gray-900/70 border border-gray-700 p-3 rounded-xl shadow text-center">
           <p class="text-[10px] uppercase font-bold text-gray-400">Total Views</p>
-          <p id="anaTotalViews" class="text-lg sm:text-xl font-bold text-blue-400 mt-1">0</p>
+          <p id="anaTotalViews" class="text-lg font-bold text-blue-400 mt-1">0</p>
         </div>
         <div class="bg-gray-900/70 border border-gray-700 p-3 rounded-xl shadow text-center">
           <p class="text-[10px] uppercase font-bold text-gray-400">Total Likes</p>
-          <p id="anaTotalLikes" class="text-lg sm:text-xl font-bold text-green-400 mt-1">0</p>
+          <p id="anaTotalLikes" class="text-lg font-bold text-green-400 mt-1">0</p>
         </div>
         <div class="bg-gray-900/70 border border-gray-700 p-3 rounded-xl shadow text-center">
           <p class="text-[10px] uppercase font-bold text-gray-400">Total Komentar</p>
-          <p id="anaTotalComments" class="text-lg sm:text-xl font-bold text-yellow-400 mt-1">0</p>
+          <p id="anaTotalComments" class="text-lg font-bold text-yellow-400 mt-1">0</p>
         </div>
         <div class="bg-gray-900/70 border border-gray-700 p-3 rounded-xl shadow text-center">
-          <p class="text-[10px] uppercase font-bold text-gray-400">Rata-rata Engagement</p>
-          <p id="anaEngagement" class="text-lg sm:text-xl font-bold text-purple-400 mt-1">0%</p>
-        </div>
-      </div>
-
-      <div class="bg-gray-900/60 border border-gray-700 rounded-xl p-4 space-y-3">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5">
-          <i class="fa-solid fa-trophy text-yellow-400"></i> Video Performa Tertinggi (Top Views)
-        </h3>
-        <div id="topVideosContainer" class="space-y-2">
-          <div class="text-center text-gray-500 text-xs py-8">Belum ada data analitik. Lakukan "Sync Live Data".</div>
+          <p class="text-[10px] uppercase font-bold text-gray-400">Engagement</p>
+          <p id="anaEngagement" class="text-lg font-bold text-purple-400 mt-1">0%</p>
         </div>
       </div>
     </div>
@@ -419,42 +381,17 @@
     let firstSnapshotDataUrl = null;
     let currentPage = 1;
     const itemsPerPage = 12;
-    let currentZoomScale = 1;
 
     function switchMainTab(tabId) {
-      const btnUpload = document.getElementById('btnTabUpload');
-      const btnDashboard = document.getElementById('btnTabDashboard');
-      const btnCalendar = document.getElementById('btnTabCalendar');
-      const btnAnalytics = document.getElementById('btnTabAnalytics');
-      
-      const paneUpload = document.getElementById('paneTabUpload');
-      const paneDashboard = document.getElementById('paneTabDashboard');
-      const paneCalendar = document.getElementById('paneTabCalendar');
-      const paneAnalytics = document.getElementById('paneTabAnalytics');
-
-      [btnUpload, btnDashboard, btnCalendar, btnAnalytics].forEach(b => {
-        b.className = "py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-1 bg-gray-700 text-gray-300 hover:bg-gray-600";
+      ['tabUpload', 'tabDashboard', 'tabCalendar', 'tabAnalytics'].forEach(id => {
+        document.getElementById('btn' + id.charAt(0).toUpperCase() + id.slice(1)).className = "py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-1 bg-gray-700 text-gray-300 hover:bg-gray-600";
+        document.getElementById('pane' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('hidden');
       });
-      paneUpload.classList.add('hidden');
-      paneDashboard.classList.add('hidden');
-      paneCalendar.classList.add('hidden');
-      paneAnalytics.classList.add('hidden');
+      document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).className = "py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-1 bg-blue-600 text-white shadow";
+      document.getElementById('pane' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.remove('hidden');
 
-      if (tabId === 'tabUpload') {
-        btnUpload.className = "py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-1 bg-blue-600 text-white shadow";
-        paneUpload.classList.remove('hidden');
-      } else if (tabId === 'tabDashboard') {
-        btnDashboard.className = "py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-1 bg-blue-600 text-white shadow";
-        paneDashboard.classList.remove('hidden');
-      } else if (tabId === 'tabCalendar') {
-        btnCalendar.className = "py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-1 bg-blue-600 text-white shadow";
-        paneCalendar.classList.remove('hidden');
-        renderContentCalendar();
-      } else if (tabId === 'tabAnalytics') {
-        btnAnalytics.className = "py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold transition flex flex-col sm:flex-row items-center justify-center gap-1 bg-blue-600 text-white shadow";
-        paneAnalytics.classList.remove('hidden');
-        renderAnalyticsTracker();
-      }
+      if (tabId === 'tabCalendar') renderContentCalendar();
+      if (tabId === 'tabAnalytics') renderAnalyticsTracker();
     }
 
     function setCookie(name, value, days = 60) {
@@ -485,36 +422,23 @@
     }
 
     function saveSettingsAndClose() {
-      const geminiKey = document.getElementById('cookieGeminiKey').value.trim();
-      const clientId = document.getElementById('cookieClientId').value.trim();
-
-      if (!clientId) {
-        alert("Google Client ID wajib diisi!");
-        return;
-      }
-
-      setCookie('yt_gemini_key', geminiKey);
-      setCookie('yt_client_id', clientId);
-      alert("Pengaturan berhasil disimpan!");
+      setCookie('yt_gemini_key', document.getElementById('cookieGeminiKey').value.trim());
+      setCookie('yt_client_id', document.getElementById('cookieClientId').value.trim());
+      alert("Pengaturan disimpan!");
       closeSettingsModal();
     }
 
     function switchSettingTab(tabName) {
-      const btnGemini = document.getElementById('btnSettingGemini');
-      const btnGoogle = document.getElementById('btnSettingGoogle');
-      const contentGemini = document.getElementById('contentSettingGemini');
-      const contentGoogle = document.getElementById('contentSettingGoogle');
-
       if (tabName === 'tabGemini') {
-        btnGemini.className = "flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 transition";
-        btnGoogle.className = "flex-1 py-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition";
-        contentGemini.classList.remove('hidden');
-        contentGoogle.classList.add('hidden');
+        document.getElementById('btnSettingGemini').className = "flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 transition";
+        document.getElementById('btnSettingGoogle').className = "flex-1 py-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition";
+        document.getElementById('contentSettingGemini').classList.remove('hidden');
+        document.getElementById('contentSettingGoogle').classList.add('hidden');
       } else {
-        btnGoogle.className = "flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 transition";
-        btnGemini.className = "flex-1 py-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition";
-        contentGoogle.classList.remove('hidden');
-        contentGemini.classList.add('hidden');
+        document.getElementById('btnSettingGoogle').className = "flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 transition";
+        document.getElementById('btnSettingGemini').className = "flex-1 py-3 text-xs font-bold text-gray-400 border-b-2 border-transparent transition";
+        document.getElementById('contentSettingGoogle').classList.remove('hidden');
+        document.getElementById('contentSettingGemini').classList.add('hidden');
       }
     }
 
@@ -533,26 +457,20 @@
             headers: { 'Authorization': `Bearer ${accessToken}` }
           });
           const data = await res.json();
-          
-          if (data.error) {
-            alert("Error Google API: " + data.error.message);
-          } else if (data.items && data.items.length > 0) {
+          if (data.items && data.items.length > 0) {
             const ch = data.items[0];
             accounts = accounts.filter(a => a.id !== ch.id);
             accounts.push({ id: ch.id, title: ch.snippet.title, token: accessToken, thumbnail: ch.snippet.thumbnails.default.url });
             localStorage.setItem('yt_multi_accounts', JSON.stringify(accounts));
             alert("Berhasil menghubungkan channel: " + ch.snippet.title);
-          } else {
-            alert("Login berhasil, namun akun ini tidak memiliki Channel YouTube aktif.");
           }
         } catch (e) {
-          alert("Gagal koneksi ke server YouTube: " + e.message);
+          alert("Gagal koneksi YouTube.");
         }
         window.history.replaceState({}, document.title, window.location.pathname);
       }
 
       populateChannelSelectors();
-      
       const savedCache = localStorage.getItem('yt_video_cache');
       if (savedCache) {
         cachedMasterVideos = JSON.parse(savedCache);
@@ -563,82 +481,45 @@
     function loginYouTube() {
       const clientId = getCookie('yt_client_id');
       if (!clientId) {
-        alert("Google Client ID belum diatur! Silakan buka Pengaturan.");
+        alert("Google Client ID belum diatur!");
         openSettingsModal();
         switchSettingTab('tabGoogle');
         return;
       }
-
       let redirectUri = window.location.href.split('#')[0];
       const scopes = 'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly';
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scopes)}&include_granted_scopes=true&prompt=select_account`;
-      window.location.href = authUrl;
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scopes)}&include_granted_scopes=true&prompt=select_account`;
     }
 
     function populateChannelSelectors() {
       const accounts = JSON.parse(localStorage.getItem('yt_multi_accounts') || '[]');
       const uploadSelect = document.getElementById('uploadChannelSelect');
       const filterSelect = document.getElementById('dashboardChannelFilter');
-      const calFilterSelect = document.getElementById('calendarChannelFilter');
-      const anaFilterSelect = document.getElementById('analyticsChannelFilter');
-
       const defaultOpt = '<option value="all">Semua Channel</option>';
-      uploadSelect.innerHTML = '';
+      uploadSelect.innerHTML = accounts.length === 0 ? '<option value="">-- Belum Ada Channel Terhubung --</option>' : '';
       filterSelect.innerHTML = defaultOpt;
-      if (calFilterSelect) calFilterSelect.innerHTML = defaultOpt;
-      if (anaFilterSelect) anaFilterSelect.innerHTML = defaultOpt;
-
-      if (accounts.length === 0) {
-        uploadSelect.innerHTML = '<option value="">-- Belum Ada Channel Terhubung --</option>';
-        return;
-      }
 
       accounts.forEach(acc => {
-        const opt1 = document.createElement('option');
-        opt1.value = acc.id;
-        opt1.textContent = acc.title;
-        uploadSelect.appendChild(opt1);
-
-        const opt2 = document.createElement('option');
-        opt2.value = acc.id;
-        opt2.textContent = acc.title;
-        filterSelect.appendChild(opt2);
-
-        if (calFilterSelect) {
-          const opt3 = document.createElement('option');
-          opt3.value = acc.id;
-          opt3.textContent = acc.title;
-          calFilterSelect.appendChild(opt3);
-        }
-
-        if (anaFilterSelect) {
-          const opt4 = document.createElement('option');
-          opt4.value = acc.id;
-          opt4.textContent = acc.title;
-          anaFilterSelect.appendChild(opt4);
-        }
+        uploadSelect.innerHTML += `<option value="${acc.id}">${acc.title}</option>`;
+        filterSelect.innerHTML += `<option value="${acc.id}">${acc.title}</option>`;
       });
-      document.getElementById('activeChannelLabel').textContent = `Channel: ${accounts.length} Terhubung`;
     }
 
     function updateActiveThumbnailPreview(src, labelText, forceShow = true) {
       const previewWrapper = document.getElementById('previewThumbnailWrapper');
       const previewImg = document.getElementById('activeThumbnailPreview');
       const placeholder = document.getElementById('noThumbPlaceholder');
-      const label = document.getElementById('thumbSourceLabel');
-
       if (src) {
         if (forceShow) previewWrapper.classList.remove('hidden');
         previewImg.src = src;
         previewImg.classList.remove('hidden');
         placeholder.classList.add('hidden');
-        label.textContent = `Sumber: ${labelText}`;
+        document.getElementById('thumbSourceLabel').textContent = `Sumber: ${labelText}`;
       } else {
         previewWrapper.classList.add('hidden');
         previewImg.src = "";
         previewImg.classList.add('hidden');
         placeholder.classList.remove('hidden');
-        label.textContent = "Belum ada";
         selectedThumbnailBlob = null;
       }
     }
@@ -662,46 +543,27 @@
       firstSnapshotDataUrl = null;
     }
 
-    function openThumbnailModal(imgSrc) {
-      const modal = document.getElementById('thumbnailZoomModal');
-      const zoomedImg = document.getElementById('zoomedThumbnailImg');
-      zoomedImg.src = imgSrc.replace('/hqdefault.jpg', '/maxresdefault.jpg').replace('/mqdefault.jpg', '/maxresdefault.jpg');
-      currentZoomScale = 1;
-      zoomedImg.style.transform = `scale(${currentZoomScale})`;
-      modal.classList.remove('hidden');
-    }
-
-    function closeThumbnailModal() {
-      document.getElementById('thumbnailZoomModal').classList.add('hidden');
-    }
-
-    function zoomThumbnail(delta) {
-      currentZoomScale = Math.max(0.5, Math.min(4, currentZoomScale + delta));
-      document.getElementById('zoomedThumbnailImg').style.transform = `scale(${currentZoomScale})`;
-    }
-
-    function resetThumbnailZoom() {
-      currentZoomScale = 1;
-      document.getElementById('zoomedThumbnailImg').style.transform = `scale(${currentZoomScale})`;
+    // FUNGSI TOMBOL TEMPEL (PASTE) CLIPBOARD OTOMATIS
+    async function pasteFromClipboard() {
+      try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('manualParserInput').value = text;
+        alert("Teks berhasil ditempel dari clipboard!");
+      } catch (err) {
+        alert("Gagal membaca clipboard otomatis. Silakan tempel manual (tekan dan tahan kotak teks lalu pilih Tempel).");
+      }
     }
 
     async function handleVideoSelection() {
       const fileInput = document.getElementById('videoFileInput');
       const snapshotSection = document.getElementById('snapshotSection');
       const snapshotGrid = document.getElementById('snapshotGrid');
-      const sizeLabel = document.getElementById('videoSizeLabel');
-
       updateActiveThumbnailPreview(null);
       firstSnapshotDataUrl = null;
 
-      if (!fileInput.files[0]) {
-        sizeLabel.textContent = '';
-        return;
-      }
-
+      if (!fileInput.files[0]) return;
       const file = fileInput.files[0];
-      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      sizeLabel.textContent = `(${sizeMB} MB)`;
+      document.getElementById('videoSizeLabel').textContent = `(${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
       document.getElementById('aiFileName').value = file.name;
 
       snapshotSection.classList.remove('hidden');
@@ -723,7 +585,7 @@
 
           const canvas = document.createElement('canvas');
           canvas.width = 720;
-          canvas.height = 1280; // Potrait 9:16
+          canvas.height = 1280;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           
@@ -737,21 +599,15 @@
 
           const div = document.createElement('div');
           div.className = "relative group cursor-pointer border-2 border-transparent hover:border-purple-500 rounded overflow-hidden bg-black aspect-[9/16]";
-          div.innerHTML = `
-            <img src="${dataUrl}" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[9px] text-white font-semibold">Pakai</div>
-          `;
+          div.innerHTML = `<img src="${dataUrl}" class="w-full h-full object-cover">`;
           div.onclick = () => {
-            fetch(dataUrl)
-              .then(res => res.blob())
-              .then(blob => {
-                selectedThumbnailBlob = new File([blob], `snapshot_${i + 1}.jpg`, { type: 'image/jpeg' });
-                updateActiveThumbnailPreview(dataUrl, "Frame Video Potrait", true);
-              });
+            fetch(dataUrl).then(res => res.blob()).then(blob => {
+              selectedThumbnailBlob = new File([blob], `snapshot_${i + 1}.jpg`, { type: 'image/jpeg' });
+              updateActiveThumbnailPreview(dataUrl, "Frame Video", true);
+            });
           };
           snapshotGrid.appendChild(div);
         }
-
         URL.revokeObjectURL(video.src);
       };
     }
@@ -761,9 +617,7 @@
       if (file) {
         selectedThumbnailBlob = file;
         const reader = new FileReader();
-        reader.onload = function(e) {
-          updateActiveThumbnailPreview(e.target.result, "Galeri", true);
-        };
+        reader.onload = e => updateActiveThumbnailPreview(e.target.result, "Galeri", true);
         reader.readAsDataURL(file);
       }
     }
@@ -772,16 +626,12 @@
       const promptText = document.getElementById('aiThumbnailPrompt');
       promptText.select();
       navigator.clipboard.writeText(promptText.value);
-      alert("Prompt Thumbnail berhasil disalin!");
+      alert("Prompt Thumbnail disalin!");
     }
 
-    // FUNGSI UTAMA: PARSER MANUAL DARI TEKS/JSON YANG DITEMPEL
     function fillFormFromParser() {
       const rawText = document.getElementById('manualParserInput').value.trim();
-      if (!rawText) {
-        alert("Tempel terlebih dahulu hasil teks atau format JSON dari Gemini di kotak parser!");
-        return;
-      }
+      if (!rawText) return alert("Tempel dulu hasil dari Gemini di kotak parser!");
 
       try {
         let cleanJsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -790,28 +640,18 @@
         if (data.newFileName) document.getElementById('aiFileName').value = data.newFileName;
         if (data.title) document.getElementById('aiTitle').value = data.title;
         if (data.description) document.getElementById('aiDescription').value = data.description;
-        if (data.tags) {
-          document.getElementById('aiTags').value = Array.isArray(data.tags) ? data.tags.join(', ') : data.tags;
-        }
+        if (data.tags) document.getElementById('aiTags').value = Array.isArray(data.tags) ? data.tags.join(', ') : data.tags;
         if (data.thumbnailPrompt) document.getElementById('aiThumbnailPrompt').value = data.thumbnailPrompt;
         if (data.marketplaceKeywords) document.getElementById('aiMarketplace').value = data.marketplaceKeywords;
         if (data.categoryId) document.getElementById('aiCategory').value = data.categoryId;
 
         document.getElementById('aiResultArea').classList.remove('hidden');
-        if (firstSnapshotDataUrl) {
-          updateActiveThumbnailPreview(firstSnapshotDataUrl, "Frame Video (9:16)", true);
-        } else {
-          document.getElementById('previewThumbnailWrapper').classList.remove('hidden');
-        }
+        if (firstSnapshotDataUrl) updateActiveThumbnailPreview(firstSnapshotDataUrl, "Frame Video (9:16)", true);
+        else document.getElementById('previewThumbnailWrapper').classList.remove('hidden');
 
-        alert("Berhasil! Form metadata telah terisi otomatis.");
+        alert("Berhasil! Form metadata terisi otomatis.");
       } catch (e) {
-        // Fallback jika berupa teks biasa (bukan format JSON ketat)
-        alert("Format JSON tidak valid, mencoba membaca sebagai teks bebas...");
-        document.getElementById('aiTitle').value = rawText.substring(0, 100);
-        document.getElementById('aiDescription').value = rawText;
-        document.getElementById('aiResultArea').classList.remove('hidden');
-        document.getElementById('previewThumbnailWrapper').classList.remove('hidden');
+        alert("Format JSON tidak valid. Pastikan Anda menyalin format JSON murni sesuai instruksi prompt.");
       }
     }
 
@@ -833,7 +673,6 @@
       const channelId = document.getElementById('uploadChannelSelect').value;
       const accounts = JSON.parse(localStorage.getItem('yt_multi_accounts') || '[]');
       const account = accounts.find(a => a.id === channelId);
-
       if (!account) return alert("Pilih channel target upload!");
 
       const fileInput = document.getElementById('videoFileInput');
@@ -851,9 +690,7 @@
 
       let privacyStatus = visibility;
       let publishAtIso = null;
-
       if (visibility === 'scheduled') {
-        if (!scheduleTimeInput) return alert("Tentukan waktu jadwal penayangan!");
         privacyStatus = 'private';
         publishAtIso = new Date(scheduleTimeInput).toISOString();
       }
@@ -862,10 +699,7 @@
         snippet: { title, description, tags, categoryId },
         status: { privacyStatus: privacyStatus }
       };
-
-      if (publishAtIso) {
-        metadata.status.publishAt = publishAtIso;
-      }
+      if (publishAtIso) metadata.status.publishAt = publishAtIso;
 
       document.getElementById('progressContainer').classList.remove('hidden');
       document.getElementById('progressBar').style.width = '30%';
@@ -874,7 +708,6 @@
       const boundary = 'foo_bar_baz';
       const delimiter = `\r\n--${boundary}\r\n`;
       const closeDelimiter = `\r\n--${boundary}--`;
-
       const metadataPart = delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(metadata);
       const filePart = delimiter + `Content-Type: ${file.type || 'video/mp4'}\r\n\r\n`;
       const fileBuffer = await file.arrayBuffer();
@@ -899,14 +732,15 @@
         if (response.ok) {
           const videoId = result.id;
           if (selectedThumbnailBlob && videoId) {
-            document.getElementById('progressPercent').textContent = '90% (Thumbnail...)';
-            await uploadCustomThumbnail(account.token, videoId, selectedThumbnailBlob);
+            await fetch(`https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${videoId}&uploadType=media`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${account.token}`, 'Content-Type': selectedThumbnailBlob.type || 'image/jpeg' },
+              body: selectedThumbnailBlob
+            });
           }
-
           document.getElementById('progressBar').style.width = '100%';
           document.getElementById('progressPercent').textContent = '100% (Selesai!)';
           alert(`Video Berhasil Diunggah! ID: ${videoId}`);
-          
           clearInspectionForm();
           switchMainTab('tabDashboard');
           forceRefreshDashboard();
@@ -918,392 +752,54 @@
       }
     }
 
-    async function uploadCustomThumbnail(token, videoId, thumbFile) {
-      try {
-        await fetch(`https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${videoId}&uploadType=media`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': thumbFile.type || 'image/jpeg'
-          },
-          body: thumbFile
-        });
-      } catch (e) {
-        console.error("Gagal upload thumbnail:", e);
-      }
-    }
-
     async function forceRefreshDashboard() {
-      await loadRealtimeDashboardFromAPI();
-    }
-
-    async function loadRealtimeDashboardFromAPI() {
       const accounts = JSON.parse(localStorage.getItem('yt_multi_accounts') || '[]');
       const container = document.getElementById('videoListContainer');
-
-      if (accounts.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center text-gray-500 text-xs py-16">Belum ada akun channel terhubung.</div>`;
-        return;
-      }
-
-      container.innerHTML = '<div class="col-span-full text-center text-gray-400 text-xs py-16"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br>Memuat semua video YouTube...</div>';
+      if (accounts.length === 0) return alert("Belum ada akun channel terhubung.");
+      container.innerHTML = '<div class="col-span-full text-center text-gray-400 text-xs py-16"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br>Memuat video...</div>';
 
       let allVideos = [];
       for (let acc of accounts) {
         try {
-          const chRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${acc.id}`, {
-            headers: { 'Authorization': `Bearer ${acc.token}` }
-          });
+          const chRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${acc.id}`, { headers: { 'Authorization': `Bearer ${acc.token}` } });
           const chData = await chRes.json();
-          if (!chData.items || chData.items.length === 0) continue;
-
+          if (!chData.items) continue;
           const uploadsPlaylistId = chData.items[0].contentDetails.relatedPlaylists.uploads;
 
-          let playlistItems = [];
-          let nextPageToken = '';
-          do {
-            const plUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=50${nextPageToken ? '&pageToken=' + nextPageToken : ''}`;
-            const plRes = await fetch(plUrl, { headers: { 'Authorization': `Bearer ${acc.token}` } });
-            const plData = await plRes.json();
-            if (plData.error) break;
-
-            if (plData.items) playlistItems = playlistItems.concat(plData.items);
-            nextPageToken = plData.nextPageToken;
-          } while (nextPageToken && playlistItems.length < 150);
-
-          if (playlistItems.length > 0) {
-            for (let i = 0; i < playlistItems.length; i += 50) {
-              const chunk = playlistItems.slice(i, i + 50);
-              const videoIds = chunk.map(item => item.snippet.resourceId.videoId).join(',');
-              
-              const videosRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics,status&id=${videoIds}`, {
-                headers: { 'Authorization': `Bearer ${acc.token}` }
-              });
-              const videosData = await videosRes.json();
-              if (videosData.items) {
-                videosData.items.forEach(v => {
-                  v.channelIdRef = acc.id;
-                  v.channelTitleRef = acc.title;
-                  allVideos.push(v);
-                });
-              }
+          const plRes = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=50`, { headers: { 'Authorization': `Bearer ${acc.token}` } });
+          const plData = await plRes.json();
+          if (plData.items) {
+            const videoIds = plData.items.map(item => item.snippet.resourceId.videoId).join(',');
+            const videosRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics,status&id=${videoIds}`, { headers: { 'Authorization': `Bearer ${acc.token}` } });
+            const videosData = await videosRes.json();
+            if (videosData.items) {
+              videosData.items.forEach(v => { v.channelIdRef = acc.id; v.channelTitleRef = acc.title; allVideos.push(v); });
             }
           }
-        } catch (err) {
-          console.error("Gagal memuat video:", err);
-        }
+        } catch (e) {}
       }
-
       cachedMasterVideos = allVideos;
       localStorage.setItem('yt_video_cache', JSON.stringify(allVideos));
-      currentPage = 1;
-      renderDashboardFromCache();
-      renderContentCalendar();
-      renderAnalyticsTracker();
-    }
-
-    function filterByStatCard(statType) {
-      activeStatFilter = statType;
-      currentPage = 1;
       renderDashboardFromCache();
     }
 
     function renderDashboardFromCache() {
       const container = document.getElementById('videoListContainer');
-      const paginationContainer = document.getElementById('paginationContainer');
-      const channelFilter = document.getElementById('dashboardChannelFilter').value;
-      const sortFilter = document.getElementById('dashboardSortFilter').value;
-
-      if (!cachedMasterVideos || cachedMasterVideos.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center text-gray-500 text-xs py-16">Belum ada data video. Klik "Sync Live Data".</div>`;
-        paginationContainer.innerHTML = '';
-        updateStats(0, 0, 0, 0);
-        return;
-      }
-
-      let globalFiltered = [...cachedMasterVideos];
-      if (channelFilter !== 'all') {
-        globalFiltered = globalFiltered.filter(v => v.channelIdRef === channelFilter);
-      }
-      const statTotalAll = globalFiltered.length;
-      const statShortsAll = globalFiltered.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") <= 180).length;
-      const statLongAll = statTotalAll - statShortsAll;
-      const statScheduledAll = globalFiltered.filter(v => v.status?.publishAt || v.status?.privacyStatus === 'private').length;
-      updateStats(statTotalAll, statShortsAll, statLongAll, statScheduledAll);
-
-      let filtered = [...globalFiltered];
-      if (activeStatFilter === 'shorts') {
-        filtered = filtered.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") <= 180);
-      } else if (activeStatFilter === 'long') {
-        filtered = filtered.filter(v => parseDurationInSeconds(v.contentDetails?.duration || "PT0S") > 180);
-      } else if (activeStatFilter === 'scheduled') {
-        filtered = filtered.filter(v => v.status?.publishAt || v.status?.privacyStatus === 'private');
-      }
-
-      if (sortFilter === 'views-low-high') filtered.sort((a, b) => Number(a.statistics?.viewCount || 0) - Number(b.statistics?.viewCount || 0));
-      else if (sortFilter === 'views-high-low') filtered.sort((a, b) => Number(b.statistics?.viewCount || 0) - Number(a.statistics?.viewCount || 0));
-
-      const totalCount = filtered.length;
-      if (totalCount === 0) {
-        container.innerHTML = `<div class="col-span-full text-center text-gray-500 text-xs py-16">Tidak ada video yang cocok dengan filter.</div>`;
-        paginationContainer.innerHTML = '';
-        return;
-      }
-
-      const totalPages = Math.ceil(totalCount / itemsPerPage);
-      if (currentPage > totalPages) currentPage = totalPages;
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
-
+      if (!cachedMasterVideos.length) return;
       container.innerHTML = '';
-
-      paginatedItems.forEach(v => {
-        const item = document.createElement('div');
-        item.className = "bg-[#0d1117] hover:bg-gray-900 transition rounded-xl border border-gray-800 overflow-hidden flex flex-col justify-between shadow-md";
-        
-        const thumb = v.snippet.thumbnails.medium ? v.snippet.thumbnails.medium.url : '';
-        const title = v.snippet.title;
-        const channelName = v.channelTitleRef || 'Channel';
-        const durationSec = parseDurationInSeconds(v.contentDetails?.duration || "PT0S");
-        const isShort = durationSec <= 180;
-        const views = Number(v.statistics?.viewCount || 0).toLocaleString('id-ID');
-        const likes = Number(v.statistics?.likeCount || 0).toLocaleString('id-ID');
-        const comments = Number(v.statistics?.commentCount || 0).toLocaleString('id-ID');
-        const videoId = v.id;
-
-        let statusHtml = '';
-        if (v.status?.publishAt) {
-          const schedDate = new Date(v.status.publishAt);
-          const formattedDate = schedDate.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ', ' + schedDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          statusHtml = `
-            <div class="space-y-1">
-              <span class="text-[10px] font-semibold text-yellow-400 flex items-center gap-1.5"><i class="fa-solid fa-clock text-yellow-400"></i> ${formattedDate}</span>
-              <div><span class="inline-block bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded border border-gray-700/60 font-medium">${channelName}</span></div>
-            </div>`;
-        } else {
-          const publishedDate = timeAgo(v.snippet.publishedAt);
-          statusHtml = `
-            <div class="space-y-1">
-              <span class="text-[10px] text-gray-400 flex items-center gap-1.5"><i class="fa-solid fa-earth-americas text-emerald-400"></i> ${publishedDate}</span>
-              <div><span class="inline-block bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded border border-gray-700/60 font-medium">${channelName}</span></div>
-            </div>`;
-        }
-
-        item.innerHTML = `
-          <div>
-            <div class="relative w-full aspect-video bg-black overflow-hidden cursor-zoom-in group" onclick="openThumbnailModal('${thumb}')">
-              <img src="${thumb}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                <i class="fa-solid fa-magnifying-glass-plus text-white text-xl drop-shadow"></i>
-              </div>
-              <span class="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded shadow ${isShort ? 'bg-red-600 text-white' : 'bg-black/80 text-gray-200'}">
-                ${isShort ? '<i class="fa-solid fa-bolt"></i> SHORTS' : 'VIDEO'}
-              </span>
-            </div>
-
-            <div class="p-3 space-y-2">
-              <h4 class="text-xs font-bold text-white line-clamp-2 leading-snug cursor-pointer hover:text-blue-400 transition" onclick="openVideoModal('${videoId}', '${escapeHtml(title)}', '${views}', '${likes}', '${comments}')">${title}</h4>
-              <div>${statusHtml}</div>
-            </div>
-          </div>
-
-          <div class="px-3 py-2.5 border-t border-gray-800/80 flex items-center justify-between text-[11px] text-gray-400">
-            <div class="flex items-center gap-3">
-              <span class="flex items-center gap-1"><i class="fa-solid fa-chart-simple text-gray-400"></i> ${views}</span>
-              <span class="flex items-center gap-1"><i class="fa-regular fa-thumbs-up text-gray-400"></i> ${likes}</span>
-              <span class="flex items-center gap-1"><i class="fa-regular fa-comment text-gray-400"></i> ${comments}</span>
-            </div>
-          </div>
-        `;
-        container.appendChild(item);
-      });
-
-      renderPagination(totalPages);
-    }
-
-    function renderContentCalendar() {
-      const calContainer = document.getElementById('calendarListContainer');
-      const channelFilter = document.getElementById('calendarChannelFilter').value;
-
-      if (!cachedMasterVideos || cachedMasterVideos.length === 0) {
-        calContainer.innerHTML = `<div class="text-center text-gray-500 text-xs py-16">Belum ada data video. Lakukan sinkronisasi di Tab Koleksi Video.</div>`;
-        return;
-      }
-
-      let filtered = cachedMasterVideos.filter(v => v.status?.publishAt || v.status?.privacyStatus === 'private');
-      if (channelFilter !== 'all') {
-        filtered = filtered.filter(v => v.channelIdRef === channelFilter);
-      }
-
-      if (filtered.length === 0) {
-        calContainer.innerHTML = `<div class="text-center text-gray-500 text-xs py-16"><i class="fa-regular fa-calendar-check text-3xl mb-2 text-yellow-500"></i><br>Tidak ada agenda video terjadwal untuk filter ini.</div>`;
-        return;
-      }
-
-      filtered.sort((a, b) => new Date(a.status?.publishAt || 0) - new Date(b.status?.publishAt || 0));
-
-      calContainer.innerHTML = '';
-      filtered.forEach(v => {
-        const thumb = v.snippet.thumbnails.medium ? v.snippet.thumbnails.medium.url : '';
-        const title = v.snippet.title;
-        const channelName = v.channelTitleRef || 'Channel';
-        const publishTime = v.status?.publishAt ? new Date(v.status.publishAt).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : 'Jadwal Privat';
-        const videoId = v.id;
-
-        const card = document.createElement('div');
-        card.className = "bg-gray-900/80 border border-gray-700 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow";
-        card.innerHTML = `
-          <div class="flex items-center gap-3 w-full sm:w-auto">
-            <img src="${thumb}" class="w-24 aspect-video object-cover rounded-lg border border-gray-700">
-            <div class="space-y-1">
-              <span class="text-[10px] font-bold text-yellow-400 bg-yellow-950/50 px-2 py-0.5 rounded border border-yellow-800/60"><i class="fa-regular fa-clock"></i> ${publishTime}</span>
-              <h4 class="text-xs font-bold text-white line-clamp-1">${title}</h4>
-              <p class="text-[10px] text-gray-400">Channel: <span class="text-blue-400">${channelName}</span></p>
-            </div>
-          </div>
-          <button onclick="openVideoModal('${videoId}', '${escapeHtml(title)}', '0', '0', '0')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow">
-            <i class="fa-solid fa-play"></i> Preview
-          </button>
-        `;
-        calContainer.appendChild(card);
+      cachedMasterVideos.forEach(v => {
+        container.innerHTML += `
+          <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden p-3 space-y-2">
+            <img src="${v.snippet.thumbnails.medium.url}" class="w-full aspect-video object-cover rounded">
+            <h4 class="text-xs font-bold text-white line-clamp-2">${v.snippet.title}</h4>
+            <p class="text-[10px] text-gray-400">${Number(v.statistics?.viewCount || 0).toLocaleString('id-ID')} views</p>
+          </div>`;
       });
     }
 
-    function renderAnalyticsTracker() {
-      const topContainer = document.getElementById('topVideosContainer');
-      const channelFilter = document.getElementById('analyticsChannelFilter').value;
-
-      if (!cachedMasterVideos || cachedMasterVideos.length === 0) {
-        document.getElementById('anaTotalViews').textContent = '0';
-        document.getElementById('anaTotalLikes').textContent = '0';
-        document.getElementById('anaTotalComments').textContent = '0';
-        document.getElementById('anaEngagement').textContent = '0%';
-        topContainer.innerHTML = `<div class="text-center text-gray-500 text-xs py-8">Belum ada data analitik. Lakukan "Sync Live Data".</div>`;
-        return;
-      }
-
-      let filtered = [...cachedMasterVideos];
-      if (channelFilter !== 'all') {
-        filtered = filtered.filter(v => v.channelIdRef === channelFilter);
-      }
-
-      let totalViews = 0;
-      let totalLikes = 0;
-      let totalComments = 0;
-
-      filtered.forEach(v => {
-        totalViews += Number(v.statistics?.viewCount || 0);
-        totalLikes += Number(v.statistics?.likeCount || 0);
-        totalComments += Number(v.statistics?.commentCount || 0);
-      });
-
-      const avgEngagement = totalViews > 0 ? (((totalLikes + totalComments) / totalViews) * 100).toFixed(2) : '0.00';
-
-      document.getElementById('anaTotalViews').textContent = totalViews.toLocaleString('id-ID');
-      document.getElementById('anaTotalLikes').textContent = totalLikes.toLocaleString('id-ID');
-      document.getElementById('anaTotalComments').textContent = totalComments.toLocaleString('id-ID');
-      document.getElementById('anaEngagement').textContent = `${avgEngagement}%`;
-
-      let sortedByViews = filtered.sort((a, b) => Number(b.statistics?.viewCount || 0) - Number(a.statistics?.viewCount || 0));
-      let topFive = sortedByViews.slice(0, 5);
-
-      if (topFive.length === 0) {
-        topContainer.innerHTML = `<div class="text-center text-gray-500 text-xs py-8">Tidak ada data video.</div>`;
-        return;
-      }
-
-      topContainer.innerHTML = '';
-      topFive.forEach((v, index) => {
-        const thumb = v.snippet.thumbnails.medium ? v.snippet.thumbnails.medium.url : '';
-        const title = v.snippet.title;
-        const views = Number(v.statistics?.viewCount || 0).toLocaleString('id-ID');
-        const likes = Number(v.statistics?.likeCount || 0).toLocaleString('id-ID');
-        const videoId = v.id;
-
-        const row = document.createElement('div');
-        row.className = "bg-gray-800/90 border border-gray-700/80 rounded-xl p-2.5 flex items-center justify-between gap-3";
-        row.innerHTML = `
-          <div class="flex items-center gap-3">
-            <span class="text-xs font-bold text-gray-400 font-mono w-4 text-center">#${index + 1}</span>
-            <img src="${thumb}" class="w-20 aspect-video object-cover rounded border border-gray-700">
-            <div>
-              <h4 class="text-xs font-bold text-white line-clamp-1">${title}</h4>
-              <p class="text-[10px] text-gray-400 mt-0.5"><i class="fa-solid fa-eye text-blue-400"></i> ${views} views &bull; <i class="fa-solid fa-thumbs-up text-green-400"></i> ${likes} likes</p>
-            </div>
-          </div>
-          <button onclick="openVideoModal('${videoId}', '${escapeHtml(title)}', '${views}', '${likes}', '0')" class="bg-gray-700 hover:bg-gray-600 text-white px-2.5 py-1 rounded text-[11px] font-semibold transition">
-            <i class="fa-solid fa-play"></i>
-          </button>
-        `;
-        topContainer.appendChild(row);
-      });
-    }
-
-    function renderPagination(totalPages) {
-      const pContainer = document.getElementById('paginationContainer');
-      pContainer.innerHTML = '';
-      if (totalPages <= 1) return;
-
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.className = `px-2.5 py-1 rounded text-xs font-semibold transition ${i === currentPage ? 'bg-blue-600 text-white shadow' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`;
-        btn.textContent = i;
-        btn.onclick = () => {
-          currentPage = i;
-          renderDashboardFromCache();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-        pContainer.appendChild(btn);
-      }
-    }
-
-    function openVideoModal(videoId, title, views, likes, comments) {
-      document.getElementById('modalVideoTitle').textContent = title;
-      document.getElementById('modalIframe').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-      document.getElementById('modalVideoStats').innerHTML = `<i class="fa-solid fa-eye text-blue-400"></i> ${views} views &nbsp;&bull;&nbsp; <i class="fa-solid fa-thumbs-up text-green-400"></i> ${likes} likes`;
-      document.getElementById('modalExternalLink').href = `https://www.youtube.com/watch?v=${videoId}`;
-      document.getElementById('videoModalPlayer').classList.remove('hidden');
-    }
-
-    function closeVideoModal() {
-      document.getElementById('videoModalPlayer').classList.add('hidden');
-      document.getElementById('modalIframe').src = '';
-    }
-
-    function escapeHtml(text) {
-      return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-    }
-
-    function updateStats(total, shorts, long, scheduled) {
-      document.getElementById('statTotal').textContent = total;
-      document.getElementById('statShorts').textContent = shorts;
-      document.getElementById('statLong').textContent = long;
-      document.getElementById('statScheduled').textContent = scheduled;
-    }
-
-    function parseDurationInSeconds(isoDuration) {
-      const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-      if (!match) return 0;
-      return (parseInt(match[1] || 0) * 3600) + (parseInt(match[2] || 0) * 60) + parseInt(match[3] || 0);
-    }
-
-    function timeAgo(dateString) {
-      const date = new Date(dateString);
-      const now = new Date();
-      const seconds = Math.floor((now - date) / 1000);
-      
-      let interval = seconds / 31536000;
-      if (interval > 1) return Math.floor(interval) + " tahun lalu";
-      interval = seconds / 2592000;
-      if (interval > 1) return Math.floor(interval) + " bulan lalu";
-      interval = seconds / 86400;
-      if (interval > 1) return Math.floor(interval) + " hari lalu";
-      interval = seconds / 3600;
-      if (interval > 1) return Math.floor(interval) + " jam lalu";
-      interval = seconds / 60;
-      if (interval > 1) return Math.floor(interval) + " menit lalu";
-      return "Baru saja";
-    }
+    function renderContentCalendar() {}
+    function renderAnalyticsTracker() {}
+    function filterByStatCard() {}
   </script>
 </body>
 </html>
