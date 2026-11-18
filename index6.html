@@ -188,7 +188,7 @@
         </div>
 
         <div>
-          <label class="block text-[11px] font-semibold mb-1">2. Judul (Max 100 Karakter):</label>
+          <label class="block text-[11px] font-semibold mb-1">2. Judul (Max 100 Karakter dengan Emoticon & 1-3 Hashtag FYP):</label>
           <input type="text" id="aiTitle" maxlength="100" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs">
         </div>
 
@@ -219,9 +219,9 @@
           <input type="text" id="aiMarketplace" readonly class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-xs text-yellow-300">
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label class="block text-[11px] font-semibold mb-1">Kategori:</label>
+            <label class="block text-[11px] font-semibold mb-1">Kategori (Otomatis):</label>
             <select id="aiCategory" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white">
               <option value="25">Berita & Politik</option>
               <option value="22">Blog & Orang</option>
@@ -238,6 +238,13 @@
               <option value="27">Pendidikan</option>
               <option value="19">Perjalanan & Acara</option>
               <option value="28">Sains & Teknologi</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold mb-1">Audience:</label>
+            <select id="uploadKids" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-xs text-white">
+              <option value="false">Tidak dibuat untuk anak-anak</option>
+              <option value="true">Ya, dibuat untuk anak-anak</option>
             </select>
           </div>
           <div>
@@ -543,14 +550,13 @@
       firstSnapshotDataUrl = null;
     }
 
-    // FUNGSI TOMBOL TEMPEL (PASTE) CLIPBOARD OTOMATIS
     async function pasteFromClipboard() {
       try {
         const text = await navigator.clipboard.readText();
         document.getElementById('manualParserInput').value = text;
         alert("Teks berhasil ditempel dari clipboard!");
       } catch (err) {
-        alert("Gagal membaca clipboard otomatis. Silakan tempel manual (tekan dan tahan kotak teks lalu pilih Tempel).");
+        alert("Gagal membaca clipboard otomatis. Silakan tempel manual.");
       }
     }
 
@@ -683,6 +689,7 @@
       const description = document.getElementById('aiDescription').value;
       const tags = document.getElementById('aiTags').value.split(',').map(t => t.trim());
       const categoryId = document.getElementById('aiCategory').value;
+      const isMadeForKids = document.getElementById('uploadKids').value === 'true';
       const visibility = document.getElementById('uploadVisibility').value;
       const scheduleTimeInput = document.getElementById('uploadScheduleTime').value;
 
@@ -697,7 +704,7 @@
 
       const metadata = {
         snippet: { title, description, tags, categoryId },
-        status: { privacyStatus: privacyStatus }
+        status: { privacyStatus: privacyStatus, selfDeclaredMadeForKids: isMadeForKids }
       };
       if (publishAtIso) metadata.status.publishAt = publishAtIso;
 
